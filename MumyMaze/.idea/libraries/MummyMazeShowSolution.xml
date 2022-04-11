@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MummyMazeShowSolution">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/MummyMazeShowSolution.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
