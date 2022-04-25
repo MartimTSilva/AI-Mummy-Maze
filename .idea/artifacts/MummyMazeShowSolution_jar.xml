@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MummyMazeShowSolution:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MummyMazeShowSolution_jar</output-path>
+    <root id="archive" name="MummyMazeShowSolution.jar">
+      <element id="module-output" name="MummyMazeShowSolution" />
+    </root>
+  </artifact>
+</component>
