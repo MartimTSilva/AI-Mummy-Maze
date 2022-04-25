@@ -2,3 +2,8 @@
 
 Aplicação que recorre aos algoritmos de procura implementados nas aulas práticas, 
 para conseguir jogar o jogo *Mummy Maze*.
+
+_______________________________
+Francisco Mateus - nº 2200663
+
+Martim Silva - nº 2200681
