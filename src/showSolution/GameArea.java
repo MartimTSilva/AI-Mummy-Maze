@@ -1,4 +1,6 @@
 package showSolution;
+import mummyMaze.GameEvent;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -71,6 +73,9 @@ public class GameArea extends JPanel {
 		if(state == null){
 			return;
 		}
+
+		//TODO: getStringMatrix()
+		//String[] splitString = (state.getStringMatrix().split("\\n"));
 		String[] splitString = (state.split("\\n"));
 		
 		for(int i = 0; i < 13; i++) {
@@ -114,4 +119,13 @@ public class GameArea extends JPanel {
 		this.solutionCost = solutionCost;
 	}
 
+	public void gameChanged(GameEvent pe){
+		solutionCost++;
+		state = (String) pe.getSource();
+		repaint();
+		try{
+			Thread.sleep(500);
+		}catch(InterruptedException ignore){
+		}
+	}
 }

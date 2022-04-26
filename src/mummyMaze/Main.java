@@ -124,6 +124,5 @@ public class Main {
         states.add(state);
 
         SolutionPanel.showSolution(states, states.size());
-
     }
 }
