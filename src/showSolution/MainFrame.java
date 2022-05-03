@@ -8,22 +8,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.*;
 
-import mummyMaze.GameAgent;
-import mummyMaze.GameProblem;
-import mummyMaze.GameState;
+import mummyMaze.MummyMazeAgent;
+import mummyMaze.MummyMazeProblem;
+import mummyMaze.MummyMazeState;
 import searchmethods.BeamSearch;
 import searchmethods.DepthLimitedSearch;
 import searchmethods.SearchMethod;
 
 public class MainFrame extends JFrame {
-
-    private int[][] initialMatrix = {{8, 7, 6}, {5, 4, 3}, {2, 1, 0}};
-    private GameAgent agent = new GameAgent(new GameState(initialMatrix));
+    private MummyMazeAgent agent = new MummyMazeAgent(new MummyMazeState(null));
     private JComboBox comboBoxSearchMethods;
     private JComboBox comboBoxHeuristics;
     private JLabel labelSearchParameter = new JLabel("limit/beam size:");
@@ -103,7 +99,6 @@ public class MainFrame extends JFrame {
         try {
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 gameArea.setState(agent.readInitialStateFromFile(fc.getSelectedFile()));
-                //puzzleTableModel.setPuzzle(agent.readInitialStateFromFile(fc.getSelectedFile()));
                 buttonSolve.setEnabled(true);
                 buttonShowSolution.setEnabled(false);
                 buttonReset.setEnabled(false);
@@ -148,7 +143,7 @@ public class MainFrame extends JFrame {
                 buttonSolve.setEnabled(false);
                 try {
                     prepareSearchAlgorithm();
-                    GameProblem problem = new GameProblem(agent.getEnvironment().clone());
+                    MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
                     agent.solveProblem(problem);
                 } catch (Exception e) {
                     e.printStackTrace(System.err);

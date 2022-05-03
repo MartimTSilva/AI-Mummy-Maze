@@ -1,5 +1,7 @@
 package showSolution;
-import mummyMaze.GameEvent;
+import mummyMaze.MummyMazeEvent;
+import mummyMaze.MummyMazeListener;
+import mummyMaze.MummyMazeState;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,7 +13,7 @@ import java.awt.Toolkit;
 
 import javax.swing.JPanel;
 
-public class GameArea extends JPanel {
+public class GameArea extends JPanel implements MummyMazeListener {
 	
 	private Image trap;
 	private Image key;
@@ -34,7 +36,7 @@ public class GameArea extends JPanel {
 	private int xStart = 63;
 	private int yStart = 79;
 	
-	private String state = null;
+	private MummyMazeState state = null;
 	private boolean showSolutionCost;
 	private double solutionCost;
 	
@@ -74,10 +76,8 @@ public class GameArea extends JPanel {
 			return;
 		}
 
-		//TODO: getStringMatrix()
-		//String[] splitString = (state.getStringMatrix().split("\\n"));
-		String[] splitString = (state.split("\\n"));
-		
+		String[] splitString = state.getMatrix().split("\\n");
+
 		for(int i = 0; i < 13; i++) {
 			for(int j = 0; j < 13; j++) {				
 				switch(splitString[i].charAt(j)) {
@@ -106,8 +106,10 @@ public class GameArea extends JPanel {
 		
 	}
 	
-	public void setState(String state){
+	public void setState(MummyMazeState state){
+		state.removeListener(this);
 		this.state = state;
+		state.addListener(this);
 		repaint();		
 	}
 
@@ -119,9 +121,9 @@ public class GameArea extends JPanel {
 		this.solutionCost = solutionCost;
 	}
 
-	public void gameChanged(GameEvent pe){
+	public void gameChanged(MummyMazeEvent event){
 		solutionCost++;
-		state = (String) pe.getSource();
+		state = (MummyMazeState) event.getSource();
 		repaint();
 		try{
 			Thread.sleep(500);

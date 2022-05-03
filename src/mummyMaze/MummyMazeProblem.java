@@ -6,11 +6,11 @@ import agent.Problem;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GameProblem extends Problem<GameState> {
+public class MummyMazeProblem extends Problem<MummyMazeState> {
     private List<Action> actions;
-    private GameState goalState;
+    private MummyMazeState goalState;
 
-    public GameProblem(GameState initialState) {
+    public MummyMazeProblem(MummyMazeState initialState) {
         super(initialState);
         this.actions = new LinkedList<>();
         this.actions.add(new ActionLeft());
@@ -18,11 +18,10 @@ public class GameProblem extends Problem<GameState> {
         this.actions.add(new ActionRight());
         this.actions.add(new ActionUp());
         this.actions.add(new ActionStop());
-        goalState = new GameState(GameState.GOAL_MATRIX);
     }
 
-    public List<Action<GameState>> getActions(GameState state) {
-        List<Action<GameState>> possibleActions = new LinkedList<>();
+    public List<Action<MummyMazeState>> getActions(MummyMazeState state) {
+        List<Action<MummyMazeState>> possibleActions = new LinkedList<>();
         for (Action action : actions){
             if (action.isValid(state))
                 possibleActions.add(action);
@@ -31,13 +30,13 @@ public class GameProblem extends Problem<GameState> {
         return possibleActions;
     }
 
-    public GameState getSuccessor(GameState state, Action action) {
-        GameState successor = state.clone();
+    public MummyMazeState getSuccessor(MummyMazeState state, Action action) {
+        MummyMazeState successor = state.clone();
         action.execute(successor);
         return successor;
     }
 
-    public boolean isGoal(GameState state) {
+    public boolean isGoal(MummyMazeState state) {
         return state.equals(goalState);
     }
 
@@ -45,7 +44,7 @@ public class GameProblem extends Problem<GameState> {
         return path.size();
     }
 
-    public GameState getGoalState() {
+    public MummyMazeState getGoalState() {
         return goalState;
     }
 }

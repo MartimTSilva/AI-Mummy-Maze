@@ -6,28 +6,80 @@ import agent.State;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class GameState extends State implements Cloneable {
-    static final int[][] GOAL_MATRIX = {{0, 1, 2},
-                                        {3, 4, 5},
-                                        {6, 7, 8}};
+public class MummyMazeState extends State implements Cloneable {
     final int[] linesfinalMatrix = {0, 0, 0, 1, 1, 1, 2, 2, 2};
     final int[] colsfinalMatrix = {0, 1, 2, 0, 1, 2, 0, 1, 2};
-    public static final int SIZE = 6;
-    private final int[][] matrix;
+    public static final int SIZE = 13;
     private int lineBlank;
     private int columnBlank;
 
-    public GameState(int[][] matrix) {
-        this.matrix = new int[matrix.length][matrix.length];
+    private char[][] matrix;
+    private Cell hero, exit;
+    private ArrayList<Cell> whiteMummies, redMummies, scorpions, doors;
 
+    public MummyMazeState(char[][] matrix) {
+        this.matrix = new char[SIZE][SIZE];
+        hero = exit = null;
+        whiteMummies = redMummies = scorpions = doors = null;
+
+        if (matrix == null)
+            return;
+
+        //Deep copy da matriz
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix.length; j++) {
                 this.matrix[i][j] = matrix[i][j];
-                if (this.matrix[i][j] == 0) {
-                    lineBlank = i;
-                    columnBlank = j;
-                }
+                this.getElementPosition(i, j);
             }
+        }
+    }
+
+    public String getMatrix() {
+        StringBuilder state = new StringBuilder();
+        for (int i = 0; i < 13; i++) {
+            for (int j = 0; j < 13; j++) {
+                state.append(matrix[i][j]);
+            }
+            state.append("\n");
+        }
+        return state.toString();
+    }
+
+    private void getElementPosition(int i, int j) {
+        switch (matrix[i][j]) {
+            case 'H':
+                hero = new Cell(i, j, '.');
+                break;
+            case 'S':
+                exit = new Cell(i, j, '.');
+                break;
+            case 'M':
+                if (whiteMummies == null) {
+                    whiteMummies = new ArrayList<>();
+                }
+                whiteMummies.add(new Cell(i, j, '.'));
+                break;
+            case 'V':
+                if (redMummies == null) {
+                    redMummies = new ArrayList<>();
+                }
+                redMummies.add(new Cell(i, j, '.'));
+                break;
+            case 'E':
+                if (scorpions == null) {
+                    scorpions = new ArrayList<>();
+                }
+                scorpions.add(new Cell(i, j, '.'));
+                break;
+            case '=':
+            case '_':
+            case '"':
+            case ')':
+                if (doors == null) {
+                    doors = new ArrayList<>();
+                }
+                doors.add(new Cell(i, j, '.'));
+                break;
         }
     }
 
@@ -36,6 +88,8 @@ public class GameState extends State implements Cloneable {
         action.execute(this);
         fireGameChanged(null);
     }
+
+
 
     public boolean canMoveUp() {
         return lineBlank != 0;
@@ -78,7 +132,7 @@ public class GameState extends State implements Cloneable {
         return;
     }
 
-    public double computeTilesOutOfPlace(GameState finalState) {
+    public double computeTilesOutOfPlace(MummyMazeState finalState) {
         int h = 0;
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -91,7 +145,7 @@ public class GameState extends State implements Cloneable {
         return h;
     }
 
-    public double computeTileDistances(GameState finalState) {
+    public double computeTileDistances(MummyMazeState finalState) {
         int h = 0;
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -124,11 +178,11 @@ public class GameState extends State implements Cloneable {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof GameState)) {
+        if (!(other instanceof MummyMazeState)) {
             return false;
         }
 
-        GameState o = (GameState) other;
+        MummyMazeState o = (MummyMazeState) other;
         if (matrix.length != o.matrix.length) {
             return false;
         }
@@ -155,27 +209,27 @@ public class GameState extends State implements Cloneable {
     }
 
     @Override
-    public GameState clone() {
-        return new GameState(matrix);
+    public MummyMazeState clone() {
+        return new MummyMazeState(matrix);
     }
 
     //Listeners
-    private transient ArrayList<GameListener> listeners = new ArrayList<GameListener>(3);
+    private transient ArrayList<MummyMazeListener> listeners = new ArrayList<MummyMazeListener>(3);
 
-    public synchronized void removeListener(GameListener l) {
+    public synchronized void removeListener(MummyMazeListener l) {
         if (listeners != null && listeners.contains(l)) {
             listeners.remove(l);
         }
     }
 
-    public synchronized void addListener(GameListener l) {
+    public synchronized void addListener(MummyMazeListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
-    public void fireGameChanged(GameListener pe) {
-        for (GameListener listener : listeners) {
+    public void fireGameChanged(MummyMazeListener pe) {
+        for (MummyMazeListener listener : listeners) {
             listener.gameChanged(null);
         }
     }
