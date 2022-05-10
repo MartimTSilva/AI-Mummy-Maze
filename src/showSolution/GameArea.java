@@ -122,8 +122,6 @@ public class GameArea extends JPanel implements MummyMazeListener {
 	}
 
 	public void gameChanged(MummyMazeEvent event){
-		solutionCost++;
-		state = (MummyMazeState) event.getSource();
 		repaint();
 		try{
 			Thread.sleep(500);

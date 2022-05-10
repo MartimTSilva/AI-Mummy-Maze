@@ -8,7 +8,6 @@ import java.util.List;
 
 public class MummyMazeProblem extends Problem<MummyMazeState> {
     private List<Action> actions;
-    private MummyMazeState goalState;
 
     public MummyMazeProblem(MummyMazeState initialState) {
         super(initialState);
@@ -17,7 +16,7 @@ public class MummyMazeProblem extends Problem<MummyMazeState> {
         this.actions.add(new ActionDown());
         this.actions.add(new ActionRight());
         this.actions.add(new ActionUp());
-        this.actions.add(new ActionStop());
+        //this.actions.add(new ActionStop());
     }
 
     public List<Action<MummyMazeState>> getActions(MummyMazeState state) {
@@ -37,14 +36,11 @@ public class MummyMazeProblem extends Problem<MummyMazeState> {
     }
 
     public boolean isGoal(MummyMazeState state) {
-        return state.equals(goalState);
+        //Quando a posição do heroi for igual à posição da saída
+        return state.isGoalReached();
     }
 
     public double computePathCost(List<Action> path) {
         return path.size();
-    }
-
-    public MummyMazeState getGoalState() {
-        return goalState;
     }
 }

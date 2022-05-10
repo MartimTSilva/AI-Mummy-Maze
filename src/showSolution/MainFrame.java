@@ -126,7 +126,7 @@ public class MainFrame extends JFrame {
     public void comboBoxHeuristics_ActionPerformed(ActionEvent e) {
         int index = comboBoxHeuristics.getSelectedIndex();
         agent.setHeuristic((Heuristic) comboBoxHeuristics.getItemAt(index));
-        //puzzleTableModel.setPuzzle(agent.resetEnvironment());
+        gameArea.setState(agent.resetEnvironment());
         buttonSolve.setEnabled(true);
         buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
@@ -134,7 +134,6 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonSolve_ActionPerformed(ActionEvent e) {
-
         SwingWorker worker = new SwingWorker<Solution, Void>() {
             @Override
             public Solution doInBackground() {
@@ -196,7 +195,7 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonReset_ActionPerformed(ActionEvent e) {
-        //puzzleTableModel.setPuzzle(agent.resetEnvironment());
+        gameArea.setState(agent.resetEnvironment());
         buttonShowSolution.setEnabled(true);
         buttonReset.setEnabled(false);
     }

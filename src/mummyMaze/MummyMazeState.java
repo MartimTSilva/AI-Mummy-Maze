@@ -7,11 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MummyMazeState extends State implements Cloneable {
-    final int[] linesfinalMatrix = {0, 0, 0, 1, 1, 1, 2, 2, 2};
-    final int[] colsfinalMatrix = {0, 1, 2, 0, 1, 2, 0, 1, 2};
     public static final int SIZE = 13;
-    private int lineBlank;
-    private int columnBlank;
 
     private char[][] matrix;
     private Cell hero, exit;
@@ -89,72 +85,71 @@ public class MummyMazeState extends State implements Cloneable {
         fireGameChanged(null);
     }
 
-
-
-    public boolean canMoveUp() {
-        return lineBlank != 0;
+    private boolean hasWall(int line, int col) {
+        return matrix[line][col] == '-' || matrix[line][col] == '|';
     }
 
-    public boolean canMoveRight() {
-        return columnBlank != matrix.length - 1;
+    public boolean canMoveUp() {
+        return (hero.i > 1 && !hasWall(hero.i - 1, hero.j) && matrix[hero.i - 2][hero.j] == '.')
+                || (hero.i == 1 && matrix[hero.i - 1][hero.j] == 'S');
     }
 
     public boolean canMoveDown() {
-        return lineBlank != matrix.length - 1;
+        return (hero.i < SIZE - 2 && !hasWall(hero.i + 1, hero.j) && matrix[hero.i + 2][hero.j] == '.')
+                || (hero.i == SIZE - 2 && matrix[hero.i + 1][hero.j] == 'S');
+    }
+
+    public boolean canMoveRight() {
+        return (hero.j < SIZE - 2 && !hasWall(hero.i, hero.j + 1) && matrix[hero.i][hero.j + 2] == '.')
+                || (hero.j == SIZE - 2 && matrix[hero.i][hero.j + 1] == 'S');
     }
 
     public boolean canMoveLeft() {
-        return columnBlank != 0;
+        return (hero.j > 2 && !hasWall(hero.i, hero.j - 1) && matrix[hero.i][hero.j - 2] == '.')
+                || (hero.j == 1 && matrix[hero.i][hero.j - 1] == 'S');
     }
 
     public void moveUp() {
-        matrix[lineBlank][columnBlank] = matrix[--lineBlank][columnBlank];
-        matrix[lineBlank][columnBlank] = 0;
+        moveVertically(hero.i == 1 ? -1 : -2);
     }
 
     public void moveRight() {
-        matrix[lineBlank][columnBlank] = matrix[lineBlank][++columnBlank];
-        matrix[lineBlank][columnBlank] = 0;
+        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2);
     }
 
     public void moveDown() {
-        matrix[lineBlank][columnBlank] = matrix[++lineBlank][columnBlank];
-        matrix[lineBlank][columnBlank] = 0;
+        moveVertically(hero.i == SIZE - 2 ? 1 : 2);
     }
 
     public void moveLeft() {
-        matrix[lineBlank][columnBlank] = matrix[lineBlank][--columnBlank];
-        matrix[lineBlank][columnBlank] = 0;
+        moveHorizontally(hero.j == 1 ? -1 : -2);
     }
 
     public void dontMove() {
         //TODO
-        return;
     }
 
-    public double computeTilesOutOfPlace(MummyMazeState finalState) {
-        int h = 0;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                if (finalState.matrix[i][j] != 0 && matrix[i][j] != finalState.matrix[i][j]) {
-                    h++;
-                }
-            }
-        }
+    private void moveHorizontally(int positionsToMove) {
+        matrix[hero.i][hero.j] = '.';
+        matrix[hero.i][hero.j + positionsToMove] = 'H';
 
-        return h;
+        hero.setJ(hero.j + positionsToMove);
     }
 
-    public double computeTileDistances(MummyMazeState finalState) {
+    private void moveVertically(int positionsToMove) {
+        matrix[hero.i][hero.j] = '.';
+        matrix[hero.i + positionsToMove][hero.j] = 'H';
+
+        hero.setI(hero.i + positionsToMove);
+    }
+
+    public boolean isGoalReached() {
+        return hero.i == exit.i && hero.j == exit.j;
+    }
+
+    public double computeGoalDistance() {
         int h = 0;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                if (matrix[i][j] != 0) {
-                    h += Math.abs(i - linesfinalMatrix[matrix[i][j]]) + Math.abs(j - colsfinalMatrix[matrix[i][j]]);
-                }
-            }
-        }
-        return h;
+        return 0;
     }
 
     public int getNumLines() {
