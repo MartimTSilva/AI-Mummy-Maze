@@ -37,7 +37,7 @@ public class MummyMazeProblem extends Problem<MummyMazeState> {
 
     public boolean isGoal(MummyMazeState state) {
         //Quando a posição do heroi for igual à posição da saída
-        return state.isGoalReached();
+        return state.isGoalReached() || state.isEnemyGoalReached();
     }
 
     public double computePathCost(List<Action> path) {

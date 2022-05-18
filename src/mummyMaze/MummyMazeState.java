@@ -10,13 +10,13 @@ public class MummyMazeState extends State implements Cloneable {
     public static final int SIZE = 13;
 
     private char[][] matrix;
-    private Cell hero, exit;
-    private ArrayList<Cell> whiteMummies, redMummies, scorpions, doors;
+    private Cell hero, exit, whiteMummy, redMummy, scorpion;
+    private ArrayList<Cell> doors, traps;
 
     public MummyMazeState(char[][] matrix) {
         this.matrix = new char[SIZE][SIZE];
-        hero = exit = null;
-        whiteMummies = redMummies = scorpions = doors = null;
+        hero = exit = whiteMummy = redMummy = scorpion = null;
+        doors = traps = null;
 
         if (matrix == null)
             return;
@@ -50,22 +50,19 @@ public class MummyMazeState extends State implements Cloneable {
                 exit = new Cell(i, j, '.');
                 break;
             case 'M':
-                if (whiteMummies == null) {
-                    whiteMummies = new ArrayList<>();
-                }
-                whiteMummies.add(new Cell(i, j, '.'));
+                whiteMummy = new Cell(i, j, '.');
                 break;
             case 'V':
-                if (redMummies == null) {
-                    redMummies = new ArrayList<>();
-                }
-                redMummies.add(new Cell(i, j, '.'));
+                redMummy = new Cell(i, j, '.');
                 break;
             case 'E':
-                if (scorpions == null) {
-                    scorpions = new ArrayList<>();
+                scorpion = new Cell(i, j, '.');
+                break;
+            case 'A':
+                if (traps == null) {
+                    traps = new ArrayList<>();
                 }
-                scorpions.add(new Cell(i, j, '.'));
+                traps.add(new Cell(i, j, '.'));
                 break;
             case '=':
             case '_':
@@ -110,37 +107,89 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     public void moveUp() {
-        moveVertically(hero.i == 1 ? -1 : -2);
+        moveVertically(hero.i == 1 ? -1 : -2, hero, 'H');
+        moveEnemies();
     }
 
     public void moveRight() {
-        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2);
+        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2, hero, 'H');
+        moveEnemies();
     }
 
     public void moveDown() {
-        moveVertically(hero.i == SIZE - 2 ? 1 : 2);
+        moveVertically(hero.i == SIZE - 2 ? 1 : 2, hero, 'H');
+        moveEnemies();
     }
 
     public void moveLeft() {
-        moveHorizontally(hero.j == 1 ? -1 : -2);
+        moveHorizontally(hero.j == 1 ? -1 : -2, hero, 'H');
+        moveEnemies();
     }
 
     public void dontMove() {
         //TODO
     }
 
-    private void moveHorizontally(int positionsToMove) {
-        matrix[hero.i][hero.j] = '.';
-        matrix[hero.i][hero.j + positionsToMove] = 'H';
+    private void moveHorizontally(int positionsToMove, Cell agent, char agentStr) {
+        matrix[agent.i][agent.j] = '.';
+        matrix[agent.i][agent.j + positionsToMove] = agentStr;
 
-        hero.setJ(hero.j + positionsToMove);
+        agent.setJ(agent.j + positionsToMove);
     }
 
-    private void moveVertically(int positionsToMove) {
-        matrix[hero.i][hero.j] = '.';
-        matrix[hero.i + positionsToMove][hero.j] = 'H';
+    private void moveVertically(int positionsToMove, Cell agent, char agentStr) {
+        matrix[agent.i][agent.j] = '.';
+        matrix[agent.i + positionsToMove][agent.j] = agentStr;
 
-        hero.setI(hero.i + positionsToMove);
+        agent.setI(agent.i + positionsToMove);
+    }
+
+    private void moveEnemies() {
+        if (isGoalReached())
+            return;
+
+        moveWhiteMummy();
+    }
+
+    private void moveWhiteMummy() {
+        if (whiteMummy == null)
+            return;
+
+        if (whiteMummy.j != hero.j) {
+            int diff = hero.j - whiteMummy.j;
+            if (diff < 0) {
+                if (!hasWall(whiteMummy.i, whiteMummy.j - 1)) {
+                    moveHorizontally(-2, whiteMummy, 'M');
+                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j - 1)) {
+                        moveHorizontally(-2, whiteMummy, 'M');
+                    }
+                }
+            } else {
+                if (!hasWall(whiteMummy.i, whiteMummy.j + 1)) {
+                    moveHorizontally(2, whiteMummy, 'M');
+                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j + 1)) {
+                        moveHorizontally(2, whiteMummy, 'M');
+                    }
+                }
+            }
+        } else {
+            int diff = hero.i - whiteMummy.i;
+            if (diff < 0) {
+                if (!hasWall(whiteMummy.i - 1, whiteMummy.j)) {
+                    moveVertically(-2, whiteMummy, 'M');
+                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i - 1, whiteMummy.j)) {
+                        moveVertically(-2, whiteMummy, 'M');
+                    }
+                }
+            } else {
+                if (!hasWall(whiteMummy.i + 1, whiteMummy.j)) {
+                    moveVertically(2, whiteMummy, 'M');
+                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i + 1, whiteMummy.j)) {
+                        moveVertically(2, whiteMummy, 'M');
+                    }
+                }
+            }
+        }
     }
 
     public boolean isGoalReached() {
@@ -148,8 +197,35 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     public double computeGoalDistance() {
+        //TODO
         int h = 0;
         return 0;
+    }
+
+    public boolean isEnemyGoalReached() {
+        if (whiteMummy != null) {
+            if (whiteMummy.i == hero.i && whiteMummy.j == hero.j)
+                return true;
+        }
+
+        if (redMummy != null) {
+            if (redMummy.i == hero.i && redMummy.j == hero.j)
+                return true;
+        }
+
+        if (scorpion != null) {
+            if (scorpion.i == hero.i && scorpion.j == hero.j)
+                return true;
+        }
+
+        if (traps != null) {
+            for (Cell trap : traps) {
+                if (trap.i == hero.i && trap.j == hero.j)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     public int getNumLines() {
