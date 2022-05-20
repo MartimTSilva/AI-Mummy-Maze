@@ -149,6 +149,12 @@ public class MummyMazeState extends State implements Cloneable {
             return;
 
         moveWhiteMummy();
+        moveRedMummy();
+        moveScorpion();
+    }
+
+    public Cell getHero() {
+        return hero;
     }
 
     private void moveWhiteMummy() {
@@ -190,6 +196,97 @@ public class MummyMazeState extends State implements Cloneable {
                 }
             }
         }
+        // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+        isHeroDead(whiteMummy);
+    }
+
+    private void moveRedMummy(){
+        if (redMummy == null)
+            return;
+
+        if (redMummy.i != hero.i) {
+            int diff = hero.i - redMummy.i;
+            if (diff < 0) {  // Múmia encontra-se abaixo do herói (tem que subir -n casas)
+                if (!hasWall(redMummy.i - 1, redMummy.j)) {
+                    moveVertically(-2, redMummy, 'V');
+                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i - 1, redMummy.j)) {
+                        moveVertically(-2, redMummy, 'V');
+                    }
+                }
+            } else {
+                if (!hasWall(redMummy.i + 1, redMummy.j)) {
+                    moveVertically(2, redMummy, 'V');
+                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i + 1, redMummy.j)) {
+                        moveVertically(2, redMummy, 'V');
+                    }
+                }
+            }
+        } else {
+            int diff = hero.j - redMummy.j;
+            if (diff < 0) { // Múmia encontra-se à direita do herói (tem que andar -n casas para a esquerda)
+                if (!hasWall(redMummy.i, redMummy.j - 1)) {
+                    moveHorizontally(-2, redMummy, 'V');
+                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j - 1)) {
+                        moveHorizontally(-2, redMummy, 'V');
+                    }
+                }
+            } else {
+                if (!hasWall(redMummy.i, redMummy.j + 1)) {
+                    moveHorizontally(2, redMummy, 'V');
+                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j + 1)) {
+                        moveHorizontally(2, redMummy, 'V');
+                    }
+                }
+            }
+        }
+        // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+        isHeroDead(redMummy);
+    }
+
+    private void moveScorpion(){
+        if (scorpion == null)
+            return;
+
+        if (scorpion.j != hero.j) {
+            int diff = hero.j - scorpion.j;
+            if (diff < 0) {
+                if (!hasWall(scorpion.i, scorpion.j - 1)) {
+                    moveHorizontally(-2, scorpion, 'E');
+                }
+            } else {
+                if (!hasWall(scorpion.i, scorpion.j + 1)) {
+                    moveHorizontally(2, scorpion, 'E');
+                }
+            }
+        } else {
+            int diff = hero.i - scorpion.i;
+            if (diff < 0) {
+                if (!hasWall(scorpion.i - 1, scorpion.j)) {
+                    moveVertically(-2, scorpion, 'E');
+                }
+            } else {
+                if (!hasWall(scorpion.i + 1, scorpion.j)) {
+                    moveVertically(2, scorpion, 'E');
+                }
+            }
+        }
+        isHeroDead(scorpion);
+    }
+
+    private void isHeroDead(Cell enemy) {
+        // Se a mumia matar o heroi, passa-se o heroi para a posição 0 (fora do nível)
+        if (isEnemyGoalReached(enemy)){
+            hero.i = 0;
+            hero.j = 0;
+        }
+    }
+
+    public boolean isEnemyGoalReached(Cell enemy) {
+        if (enemy != null) {
+            if (enemy.i == hero.i && enemy.j == hero.j)
+                return true;
+        }
+        return false;
     }
 
     public boolean isGoalReached() {
@@ -200,32 +297,6 @@ public class MummyMazeState extends State implements Cloneable {
         //TODO
         int h = 0;
         return 0;
-    }
-
-    public boolean isEnemyGoalReached() {
-        if (whiteMummy != null) {
-            if (whiteMummy.i == hero.i && whiteMummy.j == hero.j)
-                return true;
-        }
-
-        if (redMummy != null) {
-            if (redMummy.i == hero.i && redMummy.j == hero.j)
-                return true;
-        }
-
-        if (scorpion != null) {
-            if (scorpion.i == hero.i && scorpion.j == hero.j)
-                return true;
-        }
-
-        if (traps != null) {
-            for (Cell trap : traps) {
-                if (trap.i == hero.i && trap.j == hero.j)
-                    return true;
-            }
-        }
-
-        return false;
     }
 
     public int getNumLines() {
