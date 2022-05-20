@@ -162,131 +162,87 @@ public class MummyMazeState extends State implements Cloneable {
             return;
 
         if (whiteMummy.j != hero.j) {
-            int diff = hero.j - whiteMummy.j;
-            if (diff < 0) {
-                if (!hasWall(whiteMummy.i, whiteMummy.j - 1)) {
-                    moveHorizontally(-2, whiteMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j - 1)) {
-                        moveHorizontally(-2, whiteMummy);
-                    }
-                }
-            } else {
-                if (!hasWall(whiteMummy.i, whiteMummy.j + 1)) {
-                    moveHorizontally(2, whiteMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j + 1)) {
-                        moveHorizontally(2, whiteMummy);
-                    }
-                }
-            }
+            moveEnemyHorizontally(whiteMummy, true);
         } else {
-            int diff = hero.i - whiteMummy.i;
-            if (diff < 0) {
-                if (!hasWall(whiteMummy.i - 1, whiteMummy.j)) {
-                    moveVertically(-2, whiteMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i - 1, whiteMummy.j)) {
-                        moveVertically(-2, whiteMummy);
-                    }
-                }
-            } else {
-                if (!hasWall(whiteMummy.i + 1, whiteMummy.j)) {
-                    moveVertically(2, whiteMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i + 1, whiteMummy.j)) {
-                        moveVertically(2, whiteMummy);
-                    }
-                }
-            }
+            moveEnemyVertically(whiteMummy, true);
         }
         // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
-        isHeroDead(whiteMummy);
+        isEnemyGoalReached(whiteMummy);
     }
 
-    private void moveRedMummy(){
+    private void moveRedMummy() {
         if (redMummy == null)
             return;
 
         if (redMummy.i != hero.i) {
-            int diff = hero.i - redMummy.i;
-            if (diff < 0) {  // Múmia encontra-se abaixo do herói (tem que subir -n casas)
-                if (!hasWall(redMummy.i - 1, redMummy.j)) {
-                    moveVertically(-2, redMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i - 1, redMummy.j)) {
-                        moveVertically(-2, redMummy);
-                    }
-                }
-            } else {
-                if (!hasWall(redMummy.i + 1, redMummy.j)) {
-                    moveVertically(2, redMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i + 1, redMummy.j)) {
-                        moveVertically(2, redMummy);
-                    }
-                }
-            }
+            moveEnemyVertically(redMummy, true);
         } else {
-            int diff = hero.j - redMummy.j;
-            if (diff < 0) { // Múmia encontra-se à direita do herói (tem que andar -n casas para a esquerda)
-                if (!hasWall(redMummy.i, redMummy.j - 1)) {
-                    moveHorizontally(-2, redMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j - 1)) {
-                        moveHorizontally(-2, redMummy);
-                    }
-                }
-            } else {
-                if (!hasWall(redMummy.i, redMummy.j + 1)) {
-                    moveHorizontally(2, redMummy);
-                    if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j + 1)) {
-                        moveHorizontally(2, redMummy);
-                    }
-                }
-            }
+            moveEnemyHorizontally(redMummy, true);
         }
+
         // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
-        isHeroDead(redMummy);
+        isEnemyGoalReached(redMummy);
     }
 
-    private void moveScorpion(){
+    private void moveScorpion() {
         if (scorpion == null)
             return;
 
         if (scorpion.j != hero.j) {
-            int diff = hero.j - scorpion.j;
-            if (diff < 0) {
-                if (!hasWall(scorpion.i, scorpion.j - 1)) {
-                    moveHorizontally(-2, scorpion);
-                }
-            } else {
-                if (!hasWall(scorpion.i, scorpion.j + 1)) {
-                    moveHorizontally(2, scorpion);
+            moveEnemyHorizontally(scorpion, false);
+        } else {
+            moveEnemyVertically(scorpion, false);
+        }
+
+        isEnemyGoalReached(scorpion);
+    }
+
+    private void moveEnemyVertically(Cell enemy, boolean isMummy) {
+        int diff = hero.i - enemy.i;
+        if (diff < 0) {
+            if (!hasWall(enemy.i - 1, enemy.j)) {
+                moveVertically(-2, enemy);
+                if (isMummy && Math.abs(diff) > 2 && !hasWall(enemy.i - 1, enemy.j)) {
+                    moveVertically(-2, enemy);
                 }
             }
         } else {
-            int diff = hero.i - scorpion.i;
-            if (diff < 0) {
-                if (!hasWall(scorpion.i - 1, scorpion.j)) {
-                    moveVertically(-2, scorpion);
-                }
-            } else {
-                if (!hasWall(scorpion.i + 1, scorpion.j)) {
-                    moveVertically(2, scorpion);
+            if (!hasWall(enemy.i + 1, enemy.j)) {
+                moveVertically(2, enemy);
+                if (isMummy && Math.abs(diff) > 2 && !hasWall(enemy.i + 1, enemy.j)) {
+                    moveVertically(2, enemy);
                 }
             }
         }
-        isHeroDead(scorpion);
     }
 
-    private void isHeroDead(Cell enemy) {
-        // Se a mumia matar o heroi, passa-se o heroi para a posição 0 (fora do nível)
-        if (isEnemyGoalReached(enemy)){
-            hero.i = 0;
-            hero.j = 0;
+    private void moveEnemyHorizontally(Cell enemy, boolean isMummy) {
+        int diff = hero.j - enemy.j;
+        if (diff < 0) {
+            if (!hasWall(enemy.i, enemy.j - 1)) {
+                moveHorizontally(-2, enemy);
+                if (isMummy && Math.abs(diff) > 2 && !hasWall(enemy.i, enemy.j - 1)) {
+                    moveHorizontally(-2, enemy);
+                }
+            }
+        } else {
+            if (!hasWall(enemy.i, enemy.j + 1)) {
+                moveHorizontally(2, enemy);
+                if (isMummy && Math.abs(diff) > 2 && !hasWall(enemy.i, enemy.j + 1)) {
+                    moveHorizontally(2, enemy);
+                }
+            }
         }
     }
 
-    public boolean isEnemyGoalReached(Cell enemy) {
-        if (enemy != null) {
-            if (enemy.i == hero.i && enemy.j == hero.j)
-                return true;
+    public void isEnemyGoalReached(Cell enemy) {
+        if (enemy == null)
+            return;
+
+        if (enemy.i == hero.i && enemy.j == hero.j) {
+            hero.setI(0);
+            hero.setJ(0);
         }
-        return false;
     }
 
     public boolean isGoalReached() {
