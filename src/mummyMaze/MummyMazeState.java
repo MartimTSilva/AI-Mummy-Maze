@@ -43,31 +43,31 @@ public class MummyMazeState extends State implements Cloneable {
 
     private void getElementPosition(int i, int j) {
         switch (matrix[i][j]) {
-            case 'H':
+            case Cell.HERO:
                 hero = new Cell(i, j, matrix[i][j]);
                 break;
-            case 'S':
+            case Cell.EXIT:
                 exit = new Cell(i, j, matrix[i][j]);
                 break;
-            case 'M':
+            case Cell.WHITE_MUMMY:
                 whiteMummy = new Cell(i, j, matrix[i][j]);
                 break;
-            case 'V':
+            case Cell.RED_MUMMY:
                 redMummy = new Cell(i, j, matrix[i][j]);
                 break;
-            case 'E':
+            case Cell.SCORPION:
                 scorpion = new Cell(i, j, matrix[i][j]);
                 break;
-            case 'A':
+            case Cell.TRAP:
                 if (traps == null) {
                     traps = new ArrayList<>();
                 }
                 traps.add(new Cell(i, j, matrix[i][j]));
                 break;
-            case '=':
-            case '_':
-            case '"':
-            case ')':
+            case Cell.HORIZ_DOOR_CLOSED:
+            case Cell.HORIZ_DOOR_OPEN:
+            case Cell.VERT_DOOR_CLOSED:
+            case Cell.VERT_DOOR_OPEN:
                 if (doors == null) {
                     doors = new ArrayList<>();
                 }
@@ -83,27 +83,27 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private boolean hasWall(int line, int col) {
-        return matrix[line][col] == '-' || matrix[line][col] == '|';
+        return matrix[line][col] == Cell.HORIZ_WALL || matrix[line][col] == Cell.VERT_WALL;
     }
 
     public boolean canMoveUp() {
-        return (hero.i > 1 && !hasWall(hero.i - 1, hero.j) && matrix[hero.i - 2][hero.j] == '.')
-                || (hero.i == 1 && matrix[hero.i - 1][hero.j] == 'S');
+        return (hero.i > 1 && !hasWall(hero.i - 1, hero.j) && matrix[hero.i - 2][hero.j] == Cell.FLOOR)
+                || (hero.i == 1 && matrix[hero.i - 1][hero.j] == Cell.EXIT);
     }
 
     public boolean canMoveDown() {
-        return (hero.i < SIZE - 2 && !hasWall(hero.i + 1, hero.j) && matrix[hero.i + 2][hero.j] == '.')
-                || (hero.i == SIZE - 2 && matrix[hero.i + 1][hero.j] == 'S');
+        return (hero.i < SIZE - 2 && !hasWall(hero.i + 1, hero.j) && matrix[hero.i + 2][hero.j] == Cell.FLOOR)
+                || (hero.i == SIZE - 2 && matrix[hero.i + 1][hero.j] == Cell.EXIT);
     }
 
     public boolean canMoveRight() {
-        return (hero.j < SIZE - 2 && !hasWall(hero.i, hero.j + 1) && matrix[hero.i][hero.j + 2] == '.')
-                || (hero.j == SIZE - 2 && matrix[hero.i][hero.j + 1] == 'S');
+        return (hero.j < SIZE - 2 && !hasWall(hero.i, hero.j + 1) && matrix[hero.i][hero.j + 2] == Cell.FLOOR)
+                || (hero.j == SIZE - 2 && matrix[hero.i][hero.j + 1] == Cell.EXIT);
     }
 
     public boolean canMoveLeft() {
-        return (hero.j > 2 && !hasWall(hero.i, hero.j - 1) && matrix[hero.i][hero.j - 2] == '.')
-                || (hero.j == 1 && matrix[hero.i][hero.j - 1] == 'S');
+        return (hero.j > 2 && !hasWall(hero.i, hero.j - 1) && matrix[hero.i][hero.j - 2] == Cell.FLOOR)
+                || (hero.j == 1 && matrix[hero.i][hero.j - 1] == Cell.EXIT);
     }
 
     public void moveUp() {
@@ -131,15 +131,15 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private void moveHorizontally(int positionsToMove, Cell agent) {
-        matrix[agent.i][agent.j] = '.';
-        matrix[agent.i][agent.j + positionsToMove] = agent.floor;
+        matrix[agent.i][agent.j] = Cell.FLOOR;
+        matrix[agent.i][agent.j + positionsToMove] = agent.cellType;
 
         agent.setJ(agent.j + positionsToMove);
     }
 
     private void moveVertically(int positionsToMove, Cell agent) {
-        matrix[agent.i][agent.j] = '.';
-        matrix[agent.i + positionsToMove][agent.j] = agent.floor;
+        matrix[agent.i][agent.j] = Cell.FLOOR;
+        matrix[agent.i + positionsToMove][agent.j] = agent.cellType;
 
         agent.setI(agent.i + positionsToMove);
     }
