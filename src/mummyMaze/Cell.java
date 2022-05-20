@@ -1,7 +1,5 @@
 package mummyMaze;
 
-import java.util.Objects;
-
 public class Cell {
     int i, j;
     char floor;

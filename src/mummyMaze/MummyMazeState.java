@@ -44,25 +44,25 @@ public class MummyMazeState extends State implements Cloneable {
     private void getElementPosition(int i, int j) {
         switch (matrix[i][j]) {
             case 'H':
-                hero = new Cell(i, j, '.');
+                hero = new Cell(i, j, matrix[i][j]);
                 break;
             case 'S':
-                exit = new Cell(i, j, '.');
+                exit = new Cell(i, j, matrix[i][j]);
                 break;
             case 'M':
-                whiteMummy = new Cell(i, j, '.');
+                whiteMummy = new Cell(i, j, matrix[i][j]);
                 break;
             case 'V':
-                redMummy = new Cell(i, j, '.');
+                redMummy = new Cell(i, j, matrix[i][j]);
                 break;
             case 'E':
-                scorpion = new Cell(i, j, '.');
+                scorpion = new Cell(i, j, matrix[i][j]);
                 break;
             case 'A':
                 if (traps == null) {
                     traps = new ArrayList<>();
                 }
-                traps.add(new Cell(i, j, '.'));
+                traps.add(new Cell(i, j, matrix[i][j]));
                 break;
             case '=':
             case '_':
@@ -71,7 +71,7 @@ public class MummyMazeState extends State implements Cloneable {
                 if (doors == null) {
                     doors = new ArrayList<>();
                 }
-                doors.add(new Cell(i, j, '.'));
+                doors.add(new Cell(i, j, matrix[i][j]));
                 break;
         }
     }
@@ -107,22 +107,22 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     public void moveUp() {
-        moveVertically(hero.i == 1 ? -1 : -2, hero, 'H');
+        moveVertically(hero.i == 1 ? -1 : -2, hero);
         moveEnemies();
     }
 
     public void moveRight() {
-        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2, hero, 'H');
+        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2, hero);
         moveEnemies();
     }
 
     public void moveDown() {
-        moveVertically(hero.i == SIZE - 2 ? 1 : 2, hero, 'H');
+        moveVertically(hero.i == SIZE - 2 ? 1 : 2, hero);
         moveEnemies();
     }
 
     public void moveLeft() {
-        moveHorizontally(hero.j == 1 ? -1 : -2, hero, 'H');
+        moveHorizontally(hero.j == 1 ? -1 : -2, hero);
         moveEnemies();
     }
 
@@ -130,16 +130,16 @@ public class MummyMazeState extends State implements Cloneable {
         //TODO
     }
 
-    private void moveHorizontally(int positionsToMove, Cell agent, char agentStr) {
+    private void moveHorizontally(int positionsToMove, Cell agent) {
         matrix[agent.i][agent.j] = '.';
-        matrix[agent.i][agent.j + positionsToMove] = agentStr;
+        matrix[agent.i][agent.j + positionsToMove] = agent.floor;
 
         agent.setJ(agent.j + positionsToMove);
     }
 
-    private void moveVertically(int positionsToMove, Cell agent, char agentStr) {
+    private void moveVertically(int positionsToMove, Cell agent) {
         matrix[agent.i][agent.j] = '.';
-        matrix[agent.i + positionsToMove][agent.j] = agentStr;
+        matrix[agent.i + positionsToMove][agent.j] = agent.floor;
 
         agent.setI(agent.i + positionsToMove);
     }
@@ -165,16 +165,16 @@ public class MummyMazeState extends State implements Cloneable {
             int diff = hero.j - whiteMummy.j;
             if (diff < 0) {
                 if (!hasWall(whiteMummy.i, whiteMummy.j - 1)) {
-                    moveHorizontally(-2, whiteMummy, 'M');
+                    moveHorizontally(-2, whiteMummy);
                     if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j - 1)) {
-                        moveHorizontally(-2, whiteMummy, 'M');
+                        moveHorizontally(-2, whiteMummy);
                     }
                 }
             } else {
                 if (!hasWall(whiteMummy.i, whiteMummy.j + 1)) {
-                    moveHorizontally(2, whiteMummy, 'M');
+                    moveHorizontally(2, whiteMummy);
                     if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i, whiteMummy.j + 1)) {
-                        moveHorizontally(2, whiteMummy, 'M');
+                        moveHorizontally(2, whiteMummy);
                     }
                 }
             }
@@ -182,16 +182,16 @@ public class MummyMazeState extends State implements Cloneable {
             int diff = hero.i - whiteMummy.i;
             if (diff < 0) {
                 if (!hasWall(whiteMummy.i - 1, whiteMummy.j)) {
-                    moveVertically(-2, whiteMummy, 'M');
+                    moveVertically(-2, whiteMummy);
                     if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i - 1, whiteMummy.j)) {
-                        moveVertically(-2, whiteMummy, 'M');
+                        moveVertically(-2, whiteMummy);
                     }
                 }
             } else {
                 if (!hasWall(whiteMummy.i + 1, whiteMummy.j)) {
-                    moveVertically(2, whiteMummy, 'M');
+                    moveVertically(2, whiteMummy);
                     if (Math.abs(diff) > 2 && !hasWall(whiteMummy.i + 1, whiteMummy.j)) {
-                        moveVertically(2, whiteMummy, 'M');
+                        moveVertically(2, whiteMummy);
                     }
                 }
             }
@@ -208,16 +208,16 @@ public class MummyMazeState extends State implements Cloneable {
             int diff = hero.i - redMummy.i;
             if (diff < 0) {  // Múmia encontra-se abaixo do herói (tem que subir -n casas)
                 if (!hasWall(redMummy.i - 1, redMummy.j)) {
-                    moveVertically(-2, redMummy, 'V');
+                    moveVertically(-2, redMummy);
                     if (Math.abs(diff) > 2 && !hasWall(redMummy.i - 1, redMummy.j)) {
-                        moveVertically(-2, redMummy, 'V');
+                        moveVertically(-2, redMummy);
                     }
                 }
             } else {
                 if (!hasWall(redMummy.i + 1, redMummy.j)) {
-                    moveVertically(2, redMummy, 'V');
+                    moveVertically(2, redMummy);
                     if (Math.abs(diff) > 2 && !hasWall(redMummy.i + 1, redMummy.j)) {
-                        moveVertically(2, redMummy, 'V');
+                        moveVertically(2, redMummy);
                     }
                 }
             }
@@ -225,16 +225,16 @@ public class MummyMazeState extends State implements Cloneable {
             int diff = hero.j - redMummy.j;
             if (diff < 0) { // Múmia encontra-se à direita do herói (tem que andar -n casas para a esquerda)
                 if (!hasWall(redMummy.i, redMummy.j - 1)) {
-                    moveHorizontally(-2, redMummy, 'V');
+                    moveHorizontally(-2, redMummy);
                     if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j - 1)) {
-                        moveHorizontally(-2, redMummy, 'V');
+                        moveHorizontally(-2, redMummy);
                     }
                 }
             } else {
                 if (!hasWall(redMummy.i, redMummy.j + 1)) {
-                    moveHorizontally(2, redMummy, 'V');
+                    moveHorizontally(2, redMummy);
                     if (Math.abs(diff) > 2 && !hasWall(redMummy.i, redMummy.j + 1)) {
-                        moveHorizontally(2, redMummy, 'V');
+                        moveHorizontally(2, redMummy);
                     }
                 }
             }
@@ -251,22 +251,22 @@ public class MummyMazeState extends State implements Cloneable {
             int diff = hero.j - scorpion.j;
             if (diff < 0) {
                 if (!hasWall(scorpion.i, scorpion.j - 1)) {
-                    moveHorizontally(-2, scorpion, 'E');
+                    moveHorizontally(-2, scorpion);
                 }
             } else {
                 if (!hasWall(scorpion.i, scorpion.j + 1)) {
-                    moveHorizontally(2, scorpion, 'E');
+                    moveHorizontally(2, scorpion);
                 }
             }
         } else {
             int diff = hero.i - scorpion.i;
             if (diff < 0) {
                 if (!hasWall(scorpion.i - 1, scorpion.j)) {
-                    moveVertically(-2, scorpion, 'E');
+                    moveVertically(-2, scorpion);
                 }
             } else {
                 if (!hasWall(scorpion.i + 1, scorpion.j)) {
-                    moveVertically(2, scorpion, 'E');
+                    moveVertically(2, scorpion);
                 }
             }
         }
