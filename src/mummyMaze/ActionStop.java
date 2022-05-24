@@ -16,6 +16,6 @@ public class ActionStop extends Action<MummyMazeState>{
 
     @Override
     public boolean isValid(MummyMazeState state){
-        return state.canMoveDown();
+        return true;
     }
 }

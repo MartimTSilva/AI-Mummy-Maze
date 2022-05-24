@@ -16,7 +16,7 @@ public class MummyMazeProblem extends Problem<MummyMazeState> {
         this.actions.add(new ActionDown());
         this.actions.add(new ActionRight());
         this.actions.add(new ActionUp());
-        //this.actions.add(new ActionStop());
+        this.actions.add(new ActionStop());
     }
 
     public List<Action<MummyMazeState>> getActions(MummyMazeState state) {

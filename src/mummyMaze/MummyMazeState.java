@@ -130,7 +130,7 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     public void dontMove() {
-        //TODO
+        moveEnemies();
     }
 
     private void moveHorizontally(int positionsToMove, Cell agent) {
