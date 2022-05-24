@@ -134,32 +134,47 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private void moveHorizontally(int positionsToMove, Cell agent) {
-        char oldCellType = matrix[agent.i][agent.j + positionsToMove];
+        char objectiveCellType = matrix[agent.i][agent.j + positionsToMove];
 
         matrix[agent.i][agent.j] = Cell.FLOOR;
         matrix[agent.i][agent.j + positionsToMove] = agent.cellType;
         agent.setJ(agent.j + positionsToMove);
 
-        if (agent.cellType == Cell.HERO && oldCellType == Cell.KEY) {
-            for (Cell door : doors) {
-                switchDoorState(door);
-            }
-        }
+        checkDoors(agent, objectiveCellType);
     }
 
     private void moveVertically(int positionsToMove, Cell agent) {
-        char oldCellType = matrix[agent.i + positionsToMove][agent.j];
+        char objectiveCellType = matrix[agent.i + positionsToMove][agent.j];
 
         matrix[agent.i][agent.j] = Cell.FLOOR;
         matrix[agent.i + positionsToMove][agent.j] = agent.cellType;
         agent.setI(agent.i + positionsToMove);
 
+        checkDoors(agent, objectiveCellType);
+    }
+
+    private void checkDoors(Cell agent, char oldCellType) {
         if (agent.cellType == Cell.HERO && oldCellType == Cell.KEY) {
             for (Cell door : doors) {
                 switchDoorState(door);
             }
         }
     }
+
+    private void mummiesFight(ArrayList<Cell> mummies) {
+        if (mummies == null || mummies.size() < 2) {
+            return;
+        }
+
+        for (int i = 0; i < mummies.size(); i++) {
+            for (int j = 1; j < mummies.size() - 1; j++) {
+                if (mummies.get(i).i == mummies.get(j).i && mummies.get(i).j == mummies.get(j).j) {
+                    mummies.remove(i);
+                }
+            }
+        }
+    }
+
 
     private void moveEnemies() {
         if (isGoalReached())
@@ -168,6 +183,9 @@ public class MummyMazeState extends State implements Cloneable {
         moveWhiteMummy();
         moveRedMummy();
         moveScorpion();
+
+        mummiesFight(whiteMummies);
+        mummiesFight(redMummies);
     }
 
     public Cell getHero() {
