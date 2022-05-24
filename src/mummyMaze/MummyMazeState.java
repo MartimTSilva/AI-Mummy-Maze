@@ -198,9 +198,9 @@ public class MummyMazeState extends State implements Cloneable {
 
         for (Cell whiteMummy : whiteMummies) {
             if (whiteMummy.j != hero.j) {
-                moveEnemyHorizontally(whiteMummy, true);
+                moveEnemyHorizontally(whiteMummy);
             } else {
-                moveEnemyVertically(whiteMummy, true);
+                moveEnemyVertically(whiteMummy);
             }
 
             // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
@@ -214,9 +214,9 @@ public class MummyMazeState extends State implements Cloneable {
 
         for (Cell redMummy : redMummies) {
             if (redMummy.i != hero.i) {
-                moveEnemyVertically(redMummy, true);
+                moveEnemyVertically(redMummy);
             } else {
-                moveEnemyHorizontally(redMummy, true);
+                moveEnemyHorizontally(redMummy);
             }
 
             // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
@@ -229,15 +229,16 @@ public class MummyMazeState extends State implements Cloneable {
             return;
 
         if (scorpion.j != hero.j) {
-            moveEnemyHorizontally(scorpion, false);
+            moveEnemyHorizontally(scorpion);
         } else {
-            moveEnemyVertically(scorpion, false);
+            moveEnemyVertically(scorpion);
         }
 
         isEnemyGoalReached(scorpion);
     }
 
-    private void moveEnemyVertically(Cell enemy, boolean isMummy) {
+    private void moveEnemyVertically(Cell enemy) {
+        boolean isMummy = enemy.cellType == Cell.WHITE_MUMMY || enemy.cellType == Cell.RED_MUMMY;
         int diff = hero.i - enemy.i;
         if (diff < 0) {
             if (!hasWall(enemy.i - 1, enemy.j)) {
@@ -256,7 +257,8 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    private void moveEnemyHorizontally(Cell enemy, boolean isMummy) {
+    private void moveEnemyHorizontally(Cell enemy) {
+        boolean isMummy = enemy.cellType == Cell.WHITE_MUMMY || enemy.cellType == Cell.RED_MUMMY;
         int diff = hero.j - enemy.j;
         if (diff < 0) {
             if (!hasWall(enemy.i, enemy.j - 1)) {
