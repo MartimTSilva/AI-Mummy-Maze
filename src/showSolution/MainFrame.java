@@ -43,7 +43,7 @@ public class MainFrame extends JFrame {
     private void jbInit() throws Exception {
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setTitle("Eight Puzzle");
+        this.setTitle("Mummy Maze");
 
         JPanel contentPane = (JPanel) this.getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -77,18 +77,18 @@ public class MainFrame extends JFrame {
         comboBoxHeuristics.setEnabled(false);
         comboBoxHeuristics.addActionListener(new ComboBoxHeuristics_ActionAdapter(this));
 
-        JPanel puzzlePanel = new JPanel(new FlowLayout());
+        JPanel gamePanel = new JPanel(new FlowLayout());
         gameArea = new GameArea();
-        puzzlePanel.add(gameArea);
+        gamePanel.add(gameArea);
         textArea = new JTextArea(15, 31);
         JScrollPane scrollPane = new JScrollPane(textArea);
         textArea.setEditable(false);
-        puzzlePanel.add(scrollPane);
+        gamePanel.add(scrollPane);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(panelButtons, BorderLayout.NORTH);
         mainPanel.add(panelSearchMethods, BorderLayout.CENTER);
-        mainPanel.add(puzzlePanel, BorderLayout.SOUTH);
+        mainPanel.add(gamePanel, BorderLayout.SOUTH);
         contentPane.add(mainPanel);
 
         pack();

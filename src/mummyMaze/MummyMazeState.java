@@ -322,8 +322,11 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     public double computeGoalDistance() {
-        //TODO
         int h = 0;
+        return h;
+    }
+
+    public double computeEnemyDistances() {
         return 0;
     }
 
