@@ -141,6 +141,7 @@ public class MummyMazeState extends State implements Cloneable {
         agent.setJ(agent.j + positionsToMove);
 
         checkDoors(agent, objectiveCellType);
+        placeTrapBackInLevel();
     }
 
     private void moveVertically(int positionsToMove, Cell agent) {
@@ -151,6 +152,7 @@ public class MummyMazeState extends State implements Cloneable {
         agent.setI(agent.i + positionsToMove);
 
         checkDoors(agent, objectiveCellType);
+        placeTrapBackInLevel();
     }
 
     private void checkDoors(Cell agent, char oldCellType) {
@@ -174,7 +176,6 @@ public class MummyMazeState extends State implements Cloneable {
             }
         }
     }
-
 
     private void moveEnemies() {
         if (isGoalReached())
@@ -292,6 +293,17 @@ public class MummyMazeState extends State implements Cloneable {
             case Cell.HORIZ_DOOR_OPEN -> matrix[doorCell.i][doorCell.j] = Cell.HORIZ_DOOR_CLOSED;
             case Cell.VERT_DOOR_CLOSED -> matrix[doorCell.i][doorCell.j] = Cell.VERT_DOOR_OPEN;
             case Cell.VERT_DOOR_OPEN -> matrix[doorCell.i][doorCell.j] = Cell.VERT_DOOR_CLOSED;
+        }
+    }
+
+    private void placeTrapBackInLevel(){
+        if (traps == null || traps.size() == 0)
+            return;
+
+        for (Cell trap : traps) {
+            if (matrix[trap.i][trap.j] == Cell.FLOOR){
+                this.matrix[trap.i][trap.j] = Cell.TRAP;
+            }
         }
     }
 
