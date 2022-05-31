@@ -239,6 +239,9 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private void moveEnemyVertically(Cell enemy) {
+        if (isHeroDead())
+            return;
+
         boolean isMummy = enemy.cellType == Cell.WHITE_MUMMY || enemy.cellType == Cell.RED_MUMMY;
         int diff = hero.i - enemy.i;
         if (diff < 0) {
@@ -259,6 +262,9 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private void moveEnemyHorizontally(Cell enemy) {
+        if (isHeroDead())
+            return;
+
         boolean isMummy = enemy.cellType == Cell.WHITE_MUMMY || enemy.cellType == Cell.RED_MUMMY;
         int diff = hero.j - enemy.j;
         if (diff < 0) {
@@ -319,6 +325,10 @@ public class MummyMazeState extends State implements Cloneable {
 
     public boolean isGoalReached() {
         return hero.i == exit.i && hero.j == exit.j;
+    }
+
+    private boolean isHeroDead() {
+        return hero.i == 0 && hero.j == 0;
     }
 
     public double computeGoalDistance() {
