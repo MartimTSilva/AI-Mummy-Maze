@@ -278,7 +278,7 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    public void switchDoorState(Cell doorCell) {
+    private void switchDoorState(Cell doorCell) {
         if (doorCell == null)
             return;
 
@@ -307,7 +307,7 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    public void isEnemyGoalReached(Cell enemy) {
+    private void isEnemyGoalReached(Cell enemy) {
         if (enemy == null)
             return;
 
