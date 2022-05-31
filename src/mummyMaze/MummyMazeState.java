@@ -11,12 +11,12 @@ public class MummyMazeState extends State implements Cloneable {
 
     private char[][] matrix;
     private Cell hero, exit, scorpion;
-    private ArrayList<Cell> doors, traps, whiteMummies, redMummies;
+    private ArrayList<Cell> doors, keys, traps, whiteMummies, redMummies;
 
     public MummyMazeState(char[][] matrix) {
         this.matrix = new char[SIZE][SIZE];
         hero = exit = scorpion = null;
-        doors = traps = whiteMummies = redMummies = null;
+        doors = keys = traps = whiteMummies = redMummies = null;
 
         if (matrix == null)
             return;
@@ -70,6 +70,13 @@ public class MummyMazeState extends State implements Cloneable {
                 }
                 doors.add(new Cell(i, j, matrix[i][j]));
             }
+            case Cell.KEY -> {
+                if (keys == null) {
+                    keys = new ArrayList<>();
+                }
+                keys.add(new Cell(i, j, matrix[i][j]));
+            }
+
         }
     }
 
@@ -142,6 +149,7 @@ public class MummyMazeState extends State implements Cloneable {
 
         checkDoors(agent, objectiveCellType);
         placeTrapBackInLevel();
+        placeKeyBackInLevel();
     }
 
     private void moveVertically(int positionsToMove, Cell agent) {
@@ -153,10 +161,11 @@ public class MummyMazeState extends State implements Cloneable {
 
         checkDoors(agent, objectiveCellType);
         placeTrapBackInLevel();
+        placeKeyBackInLevel();
     }
 
-    private void checkDoors(Cell agent, char oldCellType) {
-        if (agent.cellType == Cell.HERO && oldCellType == Cell.KEY) {
+    private void checkDoors(Cell agent, char objectiveCellType) {
+        if (agent.cellType == Cell.HERO && objectiveCellType == Cell.KEY) {
             for (Cell door : doors) {
                 switchDoorState(door);
             }
@@ -189,23 +198,42 @@ public class MummyMazeState extends State implements Cloneable {
         mummiesFight(redMummies);
     }
 
-    public Cell getHero() {
-        return hero;
-    }
-
     private void moveWhiteMummy() {
         if (whiteMummies == null || whiteMummies.size() == 0)
             return;
 
         for (Cell whiteMummy : whiteMummies) {
-            if (whiteMummy.j != hero.j) {
-                moveEnemyHorizontally(whiteMummy);
-            } else {
-                moveEnemyVertically(whiteMummy);
-            }
+            for (int i = 0; i < 2; i++) {
+                horizontal(whiteMummy);
 
-            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
-            isEnemyGoalReached(whiteMummy);
+                // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+                isEnemyGoalReached(whiteMummy);
+            }
+        }
+    }
+
+    private void horizontal(Cell enemy) {
+        boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
+
+        int diff = hero.j - enemy.j;
+        if (diff < 0 && !hasWall(enemy.i, enemy.j - 1) && enemy.j > 2) {
+            moveHorizontally(-2, enemy);
+        } else if (diff > 0 && !hasWall(enemy.i, enemy.j + 1) && enemy.j < SIZE - 2) {
+            moveHorizontally(2, enemy);
+        } else if (!isRedMummy){
+            vertical(enemy);
+        }
+    }
+
+    private void vertical(Cell enemy) {
+        boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
+        int diff = hero.i - enemy.i;
+        if (diff < 0 && !hasWall(enemy.i - 1, enemy.j) && enemy.i > 2) {
+            moveVertically(-2, enemy);
+        } else if (diff > 0 && !hasWall(enemy.i + 1, enemy.j) && enemy.i < SIZE - 2) {
+            moveVertically(2, enemy);
+        } else if (isRedMummy) {
+            horizontal(enemy);
         }
     }
 
@@ -214,10 +242,8 @@ public class MummyMazeState extends State implements Cloneable {
             return;
 
         for (Cell redMummy : redMummies) {
-            if (redMummy.i != hero.i) {
-                moveEnemyVertically(redMummy);
-            } else {
-                moveEnemyHorizontally(redMummy);
+            for (int i = 0; i < 2; i++) {
+                vertical(redMummy);
             }
 
             // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
@@ -229,11 +255,7 @@ public class MummyMazeState extends State implements Cloneable {
         if (scorpion == null)
             return;
 
-        if (scorpion.j != hero.j) {
-            moveEnemyHorizontally(scorpion);
-        } else {
-            moveEnemyVertically(scorpion);
-        }
+        horizontal(scorpion);
 
         isEnemyGoalReached(scorpion);
     }
@@ -302,13 +324,24 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    private void placeTrapBackInLevel(){
+    private void placeTrapBackInLevel() {
         if (traps == null || traps.size() == 0)
             return;
 
         for (Cell trap : traps) {
-            if (matrix[trap.i][trap.j] == Cell.FLOOR){
+            if (matrix[trap.i][trap.j] == Cell.FLOOR) {
                 this.matrix[trap.i][trap.j] = Cell.TRAP;
+            }
+        }
+    }
+
+    private void placeKeyBackInLevel() {
+        if (keys == null || keys.size() == 0)
+            return;
+
+        for (Cell key : keys) {
+            if (matrix[key.i][key.j] == Cell.FLOOR) {
+                this.matrix[key.i][key.j] = Cell.KEY;
             }
         }
     }
@@ -329,6 +362,10 @@ public class MummyMazeState extends State implements Cloneable {
 
     private boolean isHeroDead() {
         return hero.i == 0 && hero.j == 0;
+    }
+
+    public Cell getHero() {
+        return hero;
     }
 
     public double computeGoalDistance() {
