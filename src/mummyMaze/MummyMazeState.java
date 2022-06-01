@@ -205,9 +205,9 @@ public class MummyMazeState extends State implements Cloneable {
         if (isGoalReached() || isHeroDead())
             return;
 
-        moveWhiteMummy();
-        moveRedMummy();
-        moveScorpion();
+        moveWhiteMummies();
+        moveRedMummies();
+        moveScorpions();
 
         removeDeadEnemies();
     }
@@ -223,13 +223,13 @@ public class MummyMazeState extends State implements Cloneable {
             scorpions.removeIf(enemy -> !enemy.isAlive);
     }
 
-    private void moveWhiteMummy() {
+    private void moveWhiteMummies() {
         if (whiteMummies == null || whiteMummies.size() == 0)
             return;
 
         for (Agent whiteMummy : whiteMummies) {
             for (int i = 0; i < 2; i++) {
-                horizontal(whiteMummy);
+                moveEnemyHorizontally(whiteMummy);
 
                 // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
                 isEnemyGoalReached(whiteMummy);
@@ -237,7 +237,35 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    private void horizontal(Agent enemy) {
+    private void moveRedMummies() {
+        if (redMummies == null || redMummies.size() == 0)
+            return;
+
+        for (Agent redMummy : redMummies) {
+            for (int i = 0; i < 2; i++) {
+                moveEnemyVertically(redMummy);
+            }
+
+            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+            isEnemyGoalReached(redMummy);
+        }
+    }
+
+    private void moveScorpions() {
+        if (scorpions == null || scorpions.size() == 0)
+            return;
+
+        for (Agent scorpion : scorpions) {
+            for (int i = 0; i < 2; i++) {
+                moveEnemyHorizontally(scorpion);
+            }
+
+            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+            isEnemyGoalReached(scorpion);
+        }
+    }
+
+    private void moveEnemyHorizontally(Agent enemy) {
         boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
 
         int diff = hero.j - enemy.j;
@@ -246,11 +274,11 @@ public class MummyMazeState extends State implements Cloneable {
         } else if (diff > 0 && !hasWall(enemy.i, enemy.j + 1) && enemy.j < SIZE - 2) {
             moveHorizontally(2, enemy);
         } else if (!isRedMummy) {
-            vertical(enemy);
+            moveEnemyVertically(enemy);
         }
     }
 
-    private void vertical(Agent enemy) {
+    private void moveEnemyVertically(Agent enemy) {
         boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
         int diff = hero.i - enemy.i;
         if (diff < 0 && !hasWall(enemy.i - 1, enemy.j) && enemy.i > 2) {
@@ -258,35 +286,7 @@ public class MummyMazeState extends State implements Cloneable {
         } else if (diff > 0 && !hasWall(enemy.i + 1, enemy.j) && enemy.i < SIZE - 2) {
             moveVertically(2, enemy);
         } else if (isRedMummy) {
-            horizontal(enemy);
-        }
-    }
-
-    private void moveRedMummy() {
-        if (redMummies == null || redMummies.size() == 0)
-            return;
-
-        for (Agent redMummy : redMummies) {
-            for (int i = 0; i < 2; i++) {
-                vertical(redMummy);
-            }
-
-            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
-            isEnemyGoalReached(redMummy);
-        }
-    }
-
-    private void moveScorpion() {
-        if (scorpions == null || scorpions.size() == 0)
-            return;
-
-        for (Agent scorpion : scorpions) {
-            for (int i = 0; i < 2; i++) {
-                horizontal(scorpion);
-            }
-
-            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
-            isEnemyGoalReached(scorpion);
+            moveEnemyHorizontally(enemy);
         }
     }
 
