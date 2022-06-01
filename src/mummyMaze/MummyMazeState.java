@@ -287,7 +287,7 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    private void moveEnemyVertically(Agent agent) {
+    /*private void moveEnemyVertically(Agent agent) {
         if (isHeroDead())
             return;
 
@@ -308,9 +308,9 @@ public class MummyMazeState extends State implements Cloneable {
                 }
             }
         }
-    }
+    }*/
 
-    private void moveEnemyHorizontally(Agent agent) {
+    /*private void moveEnemyHorizontally(Agent agent) {
         if (isHeroDead())
             return;
 
@@ -331,7 +331,7 @@ public class MummyMazeState extends State implements Cloneable {
                 }
             }
         }
-    }
+    }*/
 
     private void switchDoorState(Cell doorCell) {
         if (doorCell == null)
@@ -391,7 +391,7 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private boolean isHeroDead() {
-        return !hero.isAlive;
+        return (hero.j == 0 && hero.i == 0) || !hero.isAlive;
     }
 
     public Cell getHero() {
