@@ -18,7 +18,6 @@ public class Cell {
     final static char VERT_WALL = '|';
     final static char HORIZ_WALL = '-';
 
-
     public Cell(int i, int j, char cellType) {
         this.i = i;
         this.j = j;
