@@ -10,17 +10,17 @@ public class MummyMazeState extends State implements Cloneable {
     public static final int SIZE = 13;
 
     private char[][] matrix;
-    private Agent hero, scorpion;
+    private Agent hero;
     private Cell exit;
     private ArrayList<Cell> doors, keys, traps;
-    private ArrayList<Agent> whiteMummies, redMummies;
+    private ArrayList<Agent> whiteMummies, redMummies, scorpions;
 
     public MummyMazeState(char[][] matrix) {
         this.matrix = new char[SIZE][SIZE];
-        hero = scorpion = null;
+        hero = null;
         exit = null;
         doors = keys = traps = null;
-        whiteMummies = redMummies = null;
+        whiteMummies = redMummies = scorpions = null;
 
         if (matrix == null)
             return;
@@ -49,7 +49,6 @@ public class MummyMazeState extends State implements Cloneable {
         switch (matrix[i][j]) {
             case Cell.HERO -> hero = new Agent(i, j, matrix[i][j]);
             case Cell.EXIT -> exit = new Cell(i, j, matrix[i][j]);
-            case Cell.SCORPION -> scorpion = new Agent(i, j, matrix[i][j]);
             case Cell.WHITE_MUMMY -> {
                 if (whiteMummies == null) {
                     whiteMummies = new ArrayList<>();
@@ -61,6 +60,12 @@ public class MummyMazeState extends State implements Cloneable {
                     redMummies = new ArrayList<>();
                 }
                 redMummies.add(new Agent(i, j, matrix[i][j]));
+            }
+            case Cell.SCORPION -> {
+                if (scorpions == null) {
+                    scorpions = new ArrayList<>();
+                }
+                scorpions.add(new Agent(i, j, matrix[i][j]));
             }
             case Cell.TRAP -> {
                 if (traps == null) {
@@ -211,8 +216,8 @@ public class MummyMazeState extends State implements Cloneable {
         if (redMummies != null && redMummies.size() > 0)
             redMummies.removeIf(enemy -> !enemy.isAlive);
 
-        if (scorpion != null && !scorpion.isAlive)
-            scorpion = null;
+        if (scorpions != null && scorpions.size() > 0)
+            scorpions.removeIf(enemy -> !enemy.isAlive);
     }
 
     private void moveWhiteMummy() {
@@ -269,12 +274,17 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private void moveScorpion() {
-        if (scorpion == null)
+        if (scorpions == null || scorpions.size() == 0)
             return;
 
-        horizontal(scorpion);
+        for (Agent scorpion : scorpions) {
+            for (int i = 0; i < 2; i++) {
+                horizontal(scorpion);
+            }
 
-        isEnemyGoalReached(scorpion);
+            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+            isEnemyGoalReached(scorpion);
+        }
     }
 
     private void moveEnemyVertically(Agent agent) {
