@@ -86,9 +86,6 @@ public class MummyMazeState extends State implements Cloneable {
 
     @Override
     public void executeAction(Action action) {
-        if (isHeroDead() || isGoalReached())
-            return;
-
         action.execute(this);
         fireGameChanged();
     }
@@ -395,6 +392,8 @@ public class MummyMazeState extends State implements Cloneable {
             return;
 
         if (enemy.i == hero.i && enemy.j == hero.j) {
+            hero.setI(0);
+            hero.setJ(0);
             hero.killAgent();
         }
     }
