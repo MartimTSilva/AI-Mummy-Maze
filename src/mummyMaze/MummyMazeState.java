@@ -402,7 +402,7 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private double distanceToHero(Cell cell) {
-        return Math.abs(hero.j - cell.j) + Math.abs(hero.i - cell.j);
+        return Math.abs(hero.j - cell.j) + Math.abs(hero.i - cell.i);
     }
 
     public double computeGoalDistance() {
