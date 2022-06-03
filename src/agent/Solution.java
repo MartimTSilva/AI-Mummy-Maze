@@ -14,6 +14,7 @@ public class Solution {
         Node node = goalNode;
         actions = new LinkedList<>();
         while(node.getParent() != null){
+            //System.out.println("Estado" + node.getState());
             actions.addFirst(node.getState().getAction());
             node = node.getParent();
         }        

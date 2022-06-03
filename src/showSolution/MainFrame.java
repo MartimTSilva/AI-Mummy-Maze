@@ -1,6 +1,8 @@
 package showSolution;
+
 import agent.Heuristic;
 import agent.Solution;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -19,7 +21,7 @@ import searchmethods.DepthLimitedSearch;
 import searchmethods.SearchMethod;
 
 public class MainFrame extends JFrame {
-    private MummyMazeAgent agent = new MummyMazeAgent(new MummyMazeState(null));
+    private MummyMazeAgent agent = new MummyMazeAgent(new MummyMazeState(null, null, null, null, null));
     private JComboBox comboBoxSearchMethods;
     private JComboBox comboBoxHeuristics;
     private JLabel labelSearchParameter = new JLabel("limit/beam size:");
