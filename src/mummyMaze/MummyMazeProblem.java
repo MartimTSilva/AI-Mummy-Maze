@@ -16,14 +16,17 @@ public class MummyMazeProblem extends Problem<MummyMazeState> {
         this.actions.add(new ActionDown());
         this.actions.add(new ActionRight());
         this.actions.add(new ActionUp());
-        //this.actions.add(new ActionStop());
+        this.actions.add(new ActionStop());
     }
 
     public List<Action<MummyMazeState>> getActions(MummyMazeState state) {
         List<Action<MummyMazeState>> possibleActions = new LinkedList<>();
-        for (Action action : actions){
-            if (action.isValid(state))
-                possibleActions.add(action);
+
+        if (state.getHero().i != 0) {
+            for (Action action : actions) {
+                if (action.isValid(state))
+                    possibleActions.add(action);
+            }
         }
 
         return possibleActions;

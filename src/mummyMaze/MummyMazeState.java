@@ -10,13 +10,15 @@ public class MummyMazeState extends State implements Cloneable {
     public static final int SIZE = 13;
 
     private char[][] matrix;
-    private Cell hero, exit;
-    private ArrayList<Cell> whiteMummies, redMummies, scorpions, doors;
+    private Agent hero;
+    private Cell exit;
+    private ArrayList<Cell> doors, keys, traps;
+    private ArrayList<Agent> whiteMummies, redMummies, scorpions;
 
-    public MummyMazeState(char[][] matrix) {
+    public MummyMazeState(char[][] matrix, Cell exit, ArrayList<Cell> doors, ArrayList<Cell> keys, ArrayList<Cell> traps) {
         this.matrix = new char[SIZE][SIZE];
-        hero = exit = null;
-        whiteMummies = redMummies = scorpions = doors = null;
+        hero = null;
+        whiteMummies = redMummies = scorpions = null;
 
         if (matrix == null)
             return;
@@ -28,6 +30,11 @@ public class MummyMazeState extends State implements Cloneable {
                 this.getElementPosition(i, j);
             }
         }
+
+        this.exit = exit;
+        this.doors = doors;
+        this.keys = keys;
+        this.traps = traps;
     }
 
     public String getMatrix() {
@@ -43,112 +50,300 @@ public class MummyMazeState extends State implements Cloneable {
 
     private void getElementPosition(int i, int j) {
         switch (matrix[i][j]) {
-            case 'H':
-                hero = new Cell(i, j, '.');
-                break;
-            case 'S':
-                exit = new Cell(i, j, '.');
-                break;
-            case 'M':
+            case Cell.HERO -> hero = new Agent(i, j, matrix[i][j]);
+            case Cell.WHITE_MUMMY -> {
                 if (whiteMummies == null) {
                     whiteMummies = new ArrayList<>();
                 }
-                whiteMummies.add(new Cell(i, j, '.'));
-                break;
-            case 'V':
+                whiteMummies.add(new Agent(i, j, matrix[i][j]));
+            }
+            case Cell.RED_MUMMY -> {
                 if (redMummies == null) {
                     redMummies = new ArrayList<>();
                 }
-                redMummies.add(new Cell(i, j, '.'));
-                break;
-            case 'E':
+                redMummies.add(new Agent(i, j, matrix[i][j]));
+            }
+            case Cell.SCORPION -> {
                 if (scorpions == null) {
                     scorpions = new ArrayList<>();
                 }
-                scorpions.add(new Cell(i, j, '.'));
-                break;
-            case '=':
-            case '_':
-            case '"':
-            case ')':
-                if (doors == null) {
-                    doors = new ArrayList<>();
-                }
-                doors.add(new Cell(i, j, '.'));
-                break;
+                scorpions.add(new Agent(i, j, matrix[i][j]));
+            }
         }
     }
 
     @Override
     public void executeAction(Action action) {
         action.execute(this);
-        fireGameChanged(null);
+        fireGameChanged();
     }
 
     private boolean hasWall(int line, int col) {
-        return matrix[line][col] == '-' || matrix[line][col] == '|';
+        return matrix[line][col] == Cell.HORIZ_WALL || matrix[line][col] == Cell.VERT_WALL ||
+                matrix[line][col] == Cell.HORIZ_DOOR_CLOSED || matrix[line][col] == Cell.VERT_DOOR_CLOSED;
+    }
+
+    private boolean isCellSafe(int line, int col) {
+        return matrix[line][col] == Cell.FLOOR || matrix[line][col] == Cell.KEY ||
+                matrix[line][col] == Cell.HORIZ_DOOR_OPEN || matrix[line][col] == Cell.VERT_DOOR_OPEN;
     }
 
     public boolean canMoveUp() {
-        return (hero.i > 1 && !hasWall(hero.i - 1, hero.j) && matrix[hero.i - 2][hero.j] == '.')
-                || (hero.i == 1 && matrix[hero.i - 1][hero.j] == 'S');
+        return (hero.i > 1 && !hasWall(hero.i - 1, hero.j) && isCellSafe(hero.i - 2, hero.j))
+                || (hero.i == 1 && matrix[hero.i - 1][hero.j] == Cell.EXIT);
     }
 
     public boolean canMoveDown() {
-        return (hero.i < SIZE - 2 && !hasWall(hero.i + 1, hero.j) && matrix[hero.i + 2][hero.j] == '.')
-                || (hero.i == SIZE - 2 && matrix[hero.i + 1][hero.j] == 'S');
+        return (hero.i < SIZE - 2 && !hasWall(hero.i + 1, hero.j) && isCellSafe(hero.i + 2, hero.j))
+                || (hero.i == SIZE - 2 && matrix[hero.i + 1][hero.j] == Cell.EXIT);
     }
 
     public boolean canMoveRight() {
-        return (hero.j < SIZE - 2 && !hasWall(hero.i, hero.j + 1) && matrix[hero.i][hero.j + 2] == '.')
-                || (hero.j == SIZE - 2 && matrix[hero.i][hero.j + 1] == 'S');
+        return (hero.j < SIZE - 2 && !hasWall(hero.i, hero.j + 1) && isCellSafe(hero.i, hero.j + 2))
+                || (hero.j == SIZE - 2 && matrix[hero.i][hero.j + 1] == Cell.EXIT);
     }
 
     public boolean canMoveLeft() {
-        return (hero.j > 2 && !hasWall(hero.i, hero.j - 1) && matrix[hero.i][hero.j - 2] == '.')
-                || (hero.j == 1 && matrix[hero.i][hero.j - 1] == 'S');
+        return (hero.j > 2 && !hasWall(hero.i, hero.j - 1) && isCellSafe(hero.i, hero.j - 2))
+                || (hero.j == 1 && matrix[hero.i][hero.j - 1] == Cell.EXIT);
     }
 
     public void moveUp() {
-        moveVertically(hero.i == 1 ? -1 : -2);
+        moveVertically(hero.i == 1 ? -1 : -2, hero);
+        moveEnemies();
     }
 
     public void moveRight() {
-        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2);
+        moveHorizontally(hero.j == SIZE - 2 ? 1 : 2, hero);
+        moveEnemies();
     }
 
     public void moveDown() {
-        moveVertically(hero.i == SIZE - 2 ? 1 : 2);
+        moveVertically(hero.i == SIZE - 2 ? 1 : 2, hero);
+        moveEnemies();
     }
 
     public void moveLeft() {
-        moveHorizontally(hero.j == 1 ? -1 : -2);
+        moveHorizontally(hero.j == 1 ? -1 : -2, hero);
+        moveEnemies();
     }
 
     public void dontMove() {
-        //TODO
+        moveEnemies();
     }
 
-    private void moveHorizontally(int positionsToMove) {
-        matrix[hero.i][hero.j] = '.';
-        matrix[hero.i][hero.j + positionsToMove] = 'H';
+    private void moveHorizontally(int positionsToMove, Agent agent) {
+        char objectiveCellType = matrix[agent.i][agent.j + positionsToMove];
 
-        hero.setJ(hero.j + positionsToMove);
+        if (agent.cellType != Cell.HERO)
+            if (fightEnemies(agent, objectiveCellType))
+                return;
+
+        matrix[agent.i][agent.j] = Cell.FLOOR;
+        matrix[agent.i][agent.j + positionsToMove] = agent.cellType;
+        agent.setJ(agent.j + positionsToMove);
+
+        checkDoors(objectiveCellType);
+        placeElementBackInLevel(traps, Cell.TRAP);
+        placeElementBackInLevel(keys, Cell.KEY);
     }
 
-    private void moveVertically(int positionsToMove) {
-        matrix[hero.i][hero.j] = '.';
-        matrix[hero.i + positionsToMove][hero.j] = 'H';
+    private void moveVertically(int positionsToMove, Agent agent) {
+        char objectiveCellType = matrix[agent.i + positionsToMove][agent.j];
 
-        hero.setI(hero.i + positionsToMove);
+        if (agent.cellType != Cell.HERO)
+            if (fightEnemies(agent, objectiveCellType))
+                return;
+
+        matrix[agent.i][agent.j] = Cell.FLOOR;
+        matrix[agent.i + positionsToMove][agent.j] = agent.cellType;
+        agent.setI(agent.i + positionsToMove);
+
+        checkDoors(objectiveCellType);
+        placeElementBackInLevel(traps, Cell.TRAP);
+        placeElementBackInLevel(keys, Cell.KEY);
+    }
+
+    private boolean fightEnemies(Agent enemy, char objectiveCellType) {
+        if (objectiveCellType == Cell.WHITE_MUMMY || objectiveCellType == Cell.RED_MUMMY || objectiveCellType == Cell.SCORPION) {
+            matrix[enemy.i][enemy.j] = Cell.FLOOR;
+            enemy.killAgent();
+            return true;
+        }
+        return false;
+    }
+
+    private void checkDoors(char objectiveCellType) {
+        if (objectiveCellType == Cell.KEY) {
+            for (Cell door : doors) {
+                switchDoorState(door);
+            }
+        }
+    }
+
+    private void moveEnemies() {
+        if (isGoalReached() || isHeroDead())
+            return;
+
+        moveWhiteMummies();
+        moveRedMummies();
+        moveScorpions();
+
+        removeDeadEnemies();
+    }
+
+    private void removeDeadEnemies() {
+        if (whiteMummies != null && whiteMummies.size() > 0)
+            whiteMummies.removeIf(enemy -> !enemy.isAlive);
+
+        if (redMummies != null && redMummies.size() > 0)
+            redMummies.removeIf(enemy -> !enemy.isAlive);
+
+        if (scorpions != null && scorpions.size() > 0)
+            scorpions.removeIf(enemy -> !enemy.isAlive);
+    }
+
+    private void moveWhiteMummies() {
+        if (whiteMummies == null || whiteMummies.size() == 0)
+            return;
+
+        boolean heroDead = false;
+        for (Agent whiteMummy : whiteMummies) {
+            for (int i = 0; i < 2; i++) {
+                moveEnemyHorizontally(whiteMummy);
+
+                // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+                heroDead = isEnemyGoalReached(whiteMummy);
+
+                if (heroDead)
+                    break;
+            }
+            if (heroDead)
+                break;
+        }
+    }
+
+    private void moveRedMummies() {
+        if (redMummies == null || redMummies.size() == 0)
+            return;
+
+        boolean heroDead = false;
+        for (Agent redMummy : redMummies) {
+            for (int i = 0; i < 2; i++) {
+                moveEnemyVertically(redMummy);
+
+                // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+                heroDead = isEnemyGoalReached(redMummy);
+                if (heroDead)
+                    break;
+            }
+            if (heroDead)
+                break;
+        }
+    }
+
+    private void moveScorpions() {
+        if (scorpions == null || scorpions.size() == 0)
+            return;
+
+        for (Agent scorpion : scorpions) {
+            moveEnemyHorizontally(scorpion);
+
+            // Se a mumia matar o heroi, passar o heroi para a posição 0 (fora do nível)
+            if (isEnemyGoalReached(scorpion)) {
+                break;
+            }
+        }
+    }
+
+    private void moveEnemyHorizontally(Agent enemy) {
+        boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
+
+        int diff = hero.j - enemy.j;
+        if (diff < 0 && !hasWall(enemy.i, enemy.j - 1) && enemy.j > 2) {
+            moveHorizontally(-2, enemy);
+        } else if (diff > 0 && !hasWall(enemy.i, enemy.j + 1) && enemy.j < SIZE - 2) {
+            moveHorizontally(2, enemy);
+        } else if (!isRedMummy) {
+            moveEnemyVertically(enemy);
+        }
+    }
+
+    private void moveEnemyVertically(Agent enemy) {
+        boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
+        int diff = hero.i - enemy.i;
+        if (diff < 0 && !hasWall(enemy.i - 1, enemy.j) && enemy.i > 2) {
+            moveVertically(-2, enemy);
+        } else if (diff > 0 && !hasWall(enemy.i + 1, enemy.j) && enemy.i < SIZE - 2) {
+            moveVertically(2, enemy);
+        } else if (isRedMummy) {
+            moveEnemyHorizontally(enemy);
+        }
+    }
+
+    private void switchDoorState(Cell doorCell) {
+        if (doorCell == null)
+            return;
+
+        switch (matrix[doorCell.i][doorCell.j]) {
+            case Cell.HORIZ_DOOR_CLOSED -> matrix[doorCell.i][doorCell.j] = Cell.HORIZ_DOOR_OPEN;
+            case Cell.HORIZ_DOOR_OPEN -> matrix[doorCell.i][doorCell.j] = Cell.HORIZ_DOOR_CLOSED;
+            case Cell.VERT_DOOR_CLOSED -> matrix[doorCell.i][doorCell.j] = Cell.VERT_DOOR_OPEN;
+            case Cell.VERT_DOOR_OPEN -> matrix[doorCell.i][doorCell.j] = Cell.VERT_DOOR_CLOSED;
+        }
+    }
+
+    private void placeElementBackInLevel(ArrayList<Cell> cells, char elementChar){
+        if (cells == null || cells.size() == 0)
+            return;
+
+        for (Cell cell : cells) {
+            if (matrix[cell.i][cell.j] == Cell.FLOOR) {
+                matrix[cell.i][cell.j] = elementChar;
+            }
+        }
+    }
+
+    private boolean isEnemyGoalReached(Cell enemy) {
+        if (enemy == null)
+            return false;
+
+        if (enemy.i == hero.i && enemy.j == hero.j) {
+            hero.setI(0);
+            hero.setJ(0);
+            hero.killAgent();
+            return true;
+        }
+        return false;
     }
 
     public boolean isGoalReached() {
         return hero.i == exit.i && hero.j == exit.j;
     }
 
+    private boolean isHeroDead() {
+        return (hero.j == 0 && hero.i == 0) || !hero.isAlive;
+    }
+
+    public Cell getHero() {
+        return hero;
+    }
+
+    private double distanceToHero(Cell cell) {
+        return Math.abs(hero.j - cell.j) + Math.abs(hero.i - cell.i);
+    }
+
     public double computeGoalDistance() {
-        int h = 0;
+        if (isHeroDead())
+            return Double.MAX_VALUE;
+
+        return distanceToHero(exit);
+    }
+
+    public double computeEnemyDistances() {
+        if (isHeroDead())
+            return Double.MAX_VALUE;
+
         return 0;
     }
 
@@ -205,11 +400,11 @@ public class MummyMazeState extends State implements Cloneable {
 
     @Override
     public MummyMazeState clone() {
-        return new MummyMazeState(matrix);
+        return new MummyMazeState(matrix, exit, doors, keys, traps);
     }
 
     //Listeners
-    private transient ArrayList<MummyMazeListener> listeners = new ArrayList<MummyMazeListener>(3);
+    private transient ArrayList<MummyMazeListener> listeners = new ArrayList<>(3);
 
     public synchronized void removeListener(MummyMazeListener l) {
         if (listeners != null && listeners.contains(l)) {
@@ -223,7 +418,7 @@ public class MummyMazeState extends State implements Cloneable {
         }
     }
 
-    public void fireGameChanged(MummyMazeListener pe) {
+    public void fireGameChanged() {
         for (MummyMazeListener listener : listeners) {
             listener.gameChanged(null);
         }

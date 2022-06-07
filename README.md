@@ -4,4 +4,5 @@ Aplicação que recorre aos algoritmos de procura implementados nas aulas práti
 para conseguir jogar o jogo *Mummy Maze*.
 
 _______________________________
+Samuel Martins - nº 2200674
 Martim Silva - nº 2200681
