@@ -43,7 +43,6 @@ public class MainFrame extends JFrame {
     }
 
     private void jbInit() throws Exception {
-
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Mummy Maze");
 
@@ -97,7 +96,7 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonInitialState_ActionPerformed(ActionEvent e) {
-        JFileChooser fc = new JFileChooser(new java.io.File("."));
+        JFileChooser fc = new JFileChooser(new java.io.File("./levels"));
         try {
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 gameArea.setState(agent.readInitialStateFromFile(fc.getSelectedFile()));
@@ -142,6 +141,7 @@ public class MainFrame extends JFrame {
                 textArea.setText("");
                 buttonStop.setEnabled(true);
                 buttonSolve.setEnabled(false);
+                buttonInitialState.setEnabled(false);
                 try {
                     prepareSearchAlgorithm();
                     MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
@@ -162,6 +162,7 @@ public class MainFrame extends JFrame {
                 }
                 buttonSolve.setEnabled(true);
                 buttonStop.setEnabled(false);
+                buttonInitialState.setEnabled(true);
             }
         };
 
@@ -179,6 +180,7 @@ public class MainFrame extends JFrame {
         buttonShowSolution.setEnabled(false);
         buttonStop.setEnabled(false);
         buttonSolve.setEnabled(false);
+        buttonInitialState.setEnabled(false);
         SwingWorker worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
@@ -189,8 +191,9 @@ public class MainFrame extends JFrame {
 
             @Override
             public void done() {
-                buttonShowSolution.setEnabled(true);
-                buttonSolve.setEnabled(true);
+                buttonShowSolution.setEnabled(false);
+                buttonSolve.setEnabled(false);
+                buttonInitialState.setEnabled(true);
             }
         };
         worker.execute();
