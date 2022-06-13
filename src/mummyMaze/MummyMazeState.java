@@ -347,11 +347,6 @@ public class MummyMazeState extends State implements Cloneable {
         if (isGoalReached())
             return 0;
 
-        // Se o heroi estiver na saida, devolve 0
-        if (hero.i == exit.i && hero.j == exit.j){
-            return 0;
-        }
-
         int maxDistance = (SIZE - 3) * 2; //Começar a contar numa posição (-2) e não contar parte de fora do maze (-1)
         double h = maxDistance;
         double aux = Double.MAX_VALUE;
