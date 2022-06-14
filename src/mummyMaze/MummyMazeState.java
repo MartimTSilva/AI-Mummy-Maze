@@ -385,7 +385,7 @@ public class MummyMazeState extends State implements Cloneable {
             }
         }
 
-        //Se (aux > max) quer dizer que aux está com valor inf porque não havia enemigos, logo devolve 0
+        //Se (aux > max) quer dizer que aux está com valor inf porque não havia inimigos, logo devolve 0
         return aux > maxDistance ? 0 : maxDistance - h;
     }
 
