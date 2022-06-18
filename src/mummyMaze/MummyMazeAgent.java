@@ -1,6 +1,8 @@
 package mummyMaze;
 
 import agent.Agent;
+import searchmethods.BeamSearch;
+import searchmethods.DepthLimitedSearch;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,5 +63,30 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
         initialEnvironment = new MummyMazeState(matrix, exit, doors, keys, traps);
         resetEnvironment();
         return environment;
+    }
+
+    public String getCsvSearchReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(searchMethod).append(";");
+        sb.append((heuristic == null ? "N/A" : heuristic)).append(";");
+
+        if (searchMethod instanceof BeamSearch bs) {
+            sb.append(bs.getBeamSize());
+        } else if (searchMethod instanceof DepthLimitedSearch dls) {
+            sb.append(dls.getLimit());
+        } else
+            sb.append("N/A");
+
+        sb.append(";");
+        if (solution == null) {
+            sb.append("NO;N/A;");
+        } else {
+            sb.append((hasBeenStopped() ? "STOPPED" : "YES")).append(";").append(solution.getCost()).append(";");
+        }
+        sb.append(searchMethod.getStatistics().numExpandedNodes).append(";");
+        sb.append(searchMethod.getStatistics().maxFrontierSize).append(";");
+        sb.append(searchMethod.getStatistics().numGeneratedNodes);
+
+        return sb.toString();
     }
 }

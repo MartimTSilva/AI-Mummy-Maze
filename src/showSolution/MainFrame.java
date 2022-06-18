@@ -9,7 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import javax.swing.*;
 
@@ -32,7 +38,14 @@ public class MainFrame extends JFrame {
     private JButton buttonStop = new JButton("Stop");
     private JButton buttonShowSolution = new JButton("Show solution");
     private JButton buttonReset = new JButton("Reset to initial state");
+    private final JButton buttonLevelTest = new JButton("Test level");
     private JTextArea textArea;
+
+    private StringBuilder testBuilder;
+    private File testFile;
+    private String selectedFileName;
+
+    private final String FILE_HEADER = "Level;Search Algorithm;Heuristic;Limit Size;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
 
     public MainFrame() {
         try {
@@ -52,6 +65,7 @@ public class MainFrame extends JFrame {
         panelButtons.add(buttonInitialState);
         buttonInitialState.addActionListener(new ButtonInitialState_ActionAdapter(this));
         panelButtons.add(buttonSolve);
+        buttonSolve.setEnabled(false);
         buttonSolve.addActionListener(new ButtonSolve_ActionAdapter(this));
         panelButtons.add(buttonStop);
         buttonStop.setEnabled(false);
@@ -62,6 +76,9 @@ public class MainFrame extends JFrame {
         panelButtons.add(buttonReset);
         buttonReset.setEnabled(false);
         buttonReset.addActionListener(new ButtonReset_ActionAdapter(this));
+        panelButtons.add(buttonLevelTest);
+        buttonLevelTest.setEnabled(false);
+        buttonLevelTest.addActionListener(new ButtonLevelTest_ActionAdapter(this));
 
         JPanel panelSearchMethods = new JPanel(new FlowLayout());
         comboBoxSearchMethods = new JComboBox(agent.getSearchMethodsArray());
@@ -92,6 +109,10 @@ public class MainFrame extends JFrame {
         mainPanel.add(gamePanel, BorderLayout.SOUTH);
         contentPane.add(mainPanel);
 
+        Path testsFolder = Path.of("./tests");
+        if (!Files.exists(testsFolder))
+            Files.createDirectory(testsFolder);
+
         pack();
     }
 
@@ -99,10 +120,12 @@ public class MainFrame extends JFrame {
         JFileChooser fc = new JFileChooser(new java.io.File("./levels"));
         try {
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                selectedFileName = fc.getSelectedFile().getName();
                 gameArea.setState(agent.readInitialStateFromFile(fc.getSelectedFile()));
                 buttonSolve.setEnabled(true);
                 buttonShowSolution.setEnabled(false);
                 buttonReset.setEnabled(false);
+                buttonLevelTest.setEnabled(true);
             }
         } catch (IOException e1) {
             e1.printStackTrace(System.err);
@@ -203,6 +226,112 @@ public class MainFrame extends JFrame {
         gameArea.setState(agent.resetEnvironment());
         buttonShowSolution.setEnabled(true);
         buttonReset.setEnabled(false);
+    }
+
+    public void buttonLevelTest_ActionPerformed() throws IOException {
+        String dateStr = new SimpleDateFormat("dd-MM-yyyy (HH_mm_ms)").format(new Date());
+        String testFilePath = "./tests/" + selectedFileName + "-" + dateStr + ".csv";
+        testFile = new File(testFilePath);
+        testBuilder = new StringBuilder();
+
+        try {
+            prepareForTest();
+            SwingWorker worker = new SwingWorker<Void, Void>() {
+                @Override
+                public Void doInBackground() {
+                    try {
+                        textArea.setText("Testing " + selectedFileName + "...");
+                        Files.writeString(testFile.toPath(), FILE_HEADER, StandardOpenOption.CREATE);
+                        testLevel();
+                    } catch (Exception e) {
+                        e.printStackTrace(System.err);
+                    }
+                    return null;
+                }
+
+                @Override
+                public void done() {
+                    if (testBuilder.length() > 0) {
+                        try {
+                            Files.writeString(testFile.toPath(), testBuilder, StandardOpenOption.APPEND);
+                        } catch (IOException e) {
+                            e.printStackTrace(System.err);
+                        }
+                    }
+
+                    buttonInitialState.setEnabled(true);
+                    buttonSolve.setEnabled(true);
+                    buttonStop.setEnabled(false);
+                    comboBoxSearchMethods.setEnabled(true);
+                    comboBoxHeuristics.setEnabled(true);
+                    buttonLevelTest.setEnabled(true);
+                }
+            };
+            worker.execute();
+
+
+        } catch (NoSuchElementException e2) {
+            JOptionPane.showMessageDialog(this, "File format not valid", "Error!", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private synchronized void testLevel() {
+        for (int i = 0; i < agent.getSearchMethodsArray().length; i++) {
+            //Don't test Beam and Depth Limited Search (i == 3 -> DepthLimitedSearch | i == 7 -> BeamSearch)
+            if (i == 3 || i == 7)
+                continue;
+
+            SearchMethod searchMethod = agent.getSearchMethodsArray()[i];
+
+            //Don't need heuristic if search method is not informed
+            if (i > 4) {
+                for (Heuristic heuristic : agent.getHeuristicsArray()) {
+                    runSearchMethodTest(searchMethod, heuristic);
+                }
+            } else {
+                runSearchMethodTest(searchMethod, null);
+            }
+        }
+        textArea.append("\nTests completed!");
+    }
+
+    private void runSearchMethodTest(SearchMethod searchMethod, Heuristic heuristic) {
+        textArea.append("\n\t" + searchMethod);
+
+        if (heuristic != null)
+            textArea.append(" (" + heuristic + ")");
+
+        agent.setHeuristic(heuristic);
+        agent.resetEnvironment();
+        agent.setSearchMethod(searchMethod);
+
+        textArea.append(" - ");
+        MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
+        testBuilder.append("\n").append(selectedFileName).append(";");
+        try {
+            agent.solveProblem(problem);
+            if (agent.hasBeenStopped())
+                textArea.append(" Stopped :(");
+            else
+                textArea.append(" OK!");
+            testBuilder.append(agent.getCsvSearchReport());
+        } catch (Exception e) {
+            textArea.append("Something went wrong..\n ERROR: " + e.getMessage());
+        }
+    }
+
+    private void prepareForTest() {
+        textArea.setText("");
+        buttonShowSolution.setEnabled(false);
+        buttonReset.setEnabled(false);
+        buttonInitialState.setEnabled(false);
+        buttonSolve.setEnabled(false);
+        buttonStop.setEnabled(true);
+        comboBoxHeuristics.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(false);
+        buttonLevelTest.setEnabled(false);
+
+        testBuilder = new StringBuilder();
     }
 
     private void prepareSearchAlgorithm() {
@@ -311,6 +440,24 @@ class ButtonReset_ActionAdapter implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         adaptee.buttonReset_ActionPerformed(e);
+    }
+}
+
+class ButtonLevelTest_ActionAdapter implements ActionListener {
+
+    private final MainFrame adaptee;
+
+    ButtonLevelTest_ActionAdapter(MainFrame adaptee) {
+        this.adaptee = adaptee;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            adaptee.buttonLevelTest_ActionPerformed();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
 
