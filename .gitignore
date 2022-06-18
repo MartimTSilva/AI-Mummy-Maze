@@ -110,3 +110,6 @@ fabric.properties
 # Ignore MS Word files
 *.doc
 *.docx
+
+# Level Tests Folder
+tests/

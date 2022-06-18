@@ -45,7 +45,7 @@ public class MainFrame extends JFrame {
     private File testFile;
     private String selectedFileName;
 
-    private final String FILE_HEADER = "Level;Search Algorithm;Heuristic;Limit Size;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
+    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Limit Size;Solution Found;Solution Cost;Number of Expanded Nodes;Maximum Frontier Size;Number of Generated States\n";
 
     public MainFrame() {
         try {
@@ -241,7 +241,7 @@ public class MainFrame extends JFrame {
                 public Void doInBackground() {
                     try {
                         textArea.setText("Testing " + selectedFileName + "...");
-                        Files.writeString(testFile.toPath(), FILE_HEADER, StandardOpenOption.CREATE);
+                        Files.writeString(testFile.toPath(), EXCEL_HEADER, StandardOpenOption.CREATE);
                         testLevel();
                     } catch (Exception e) {
                         e.printStackTrace(System.err);
