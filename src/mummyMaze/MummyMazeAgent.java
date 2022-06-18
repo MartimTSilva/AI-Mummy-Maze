@@ -66,28 +66,25 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
         return environment;
     }
 
-    public String getCsvSearchReport() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(searchMethod).append(";");
-        sb.append((heuristic == null ? "N/A" : heuristic)).append(";");
+    public String getStatistics() {
+        StringBuilder str = new StringBuilder();
+        str.append(searchMethod).append(";");
+        str.append(heuristic).append(";");
 
-        if (searchMethod instanceof BeamSearch bs) {
-            sb.append(bs.getBeamSize());
-        } else if (searchMethod instanceof DepthLimitedSearch dls) {
-            sb.append(dls.getLimit());
-        } else
-            sb.append("N/A");
-
-        sb.append(";");
-        if (solution == null) {
-            sb.append("NO;N/A;");
-        } else {
-            sb.append((hasBeenStopped() ? "STOPPED" : "YES")).append(";").append(solution.getCost()).append(";");
+        if (solution == null){
+            str.append("No solution found").append(";").append("0").append(";");
+            str.append(searchMethod.getStatistics().numExpandedNodes).append(";");
+            str.append(searchMethod.getStatistics().maxFrontierSize).append(";");
+            str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
+            return str.toString();
         }
-        sb.append(searchMethod.getStatistics().numExpandedNodes).append(";");
-        sb.append(searchMethod.getStatistics().maxFrontierSize).append(";");
-        sb.append(searchMethod.getStatistics().numGeneratedNodes);
 
-        return sb.toString();
+        str.append("Yes").append(";").append(solution.getCost()).append(";");
+        str.append(searchMethod.getStatistics().numExpandedNodes).append(";");
+        str.append(searchMethod.getStatistics().maxFrontierSize).append(";");
+        str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
+
+        return str.toString();
     }
+
 }

@@ -45,7 +45,11 @@ public class MainFrame extends JFrame {
     private File testFile;
     private String selectedFileName;
 
+<<<<<<< Updated upstream
     private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Limit Size;Solution Found;Solution Cost;Number of Expanded Nodes;Maximum Frontier Size;Number of Generated States\n";
+=======
+    private final String FILE_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
+>>>>>>> Stashed changes
 
     public MainFrame() {
         try {
@@ -314,9 +318,11 @@ public class MainFrame extends JFrame {
                 textArea.append(" Stopped :(");
             else
                 textArea.append(" OK!");
-            testBuilder.append(agent.getCsvSearchReport());
+
+            testBuilder.append(agent.getStatistics());
         } catch (Exception e) {
             textArea.append("Something went wrong..\n ERROR: " + e.getMessage());
+            testBuilder.append(agent.getStatistics().replaceFirst("ERROR", ""));
         }
     }
 
@@ -330,6 +336,7 @@ public class MainFrame extends JFrame {
         comboBoxHeuristics.setEnabled(false);
         comboBoxSearchMethods.setEnabled(false);
         buttonLevelTest.setEnabled(false);
+        buttonStop.setEnabled(false);
 
         testBuilder = new StringBuilder();
     }
