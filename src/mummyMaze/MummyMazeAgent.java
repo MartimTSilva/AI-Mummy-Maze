@@ -19,6 +19,7 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
         initialEnvironment = environment.clone();
         heuristics.add(new HeuristicGoalDistance());
         heuristics.add(new HeuristicEnemyDistance());
+        heuristics.add(new HeuristicGoalAndEnemyDistance());
         heuristic = heuristics.get(0);
     }
 
