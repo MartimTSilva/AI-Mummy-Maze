@@ -45,11 +45,7 @@ public class MainFrame extends JFrame {
     private File testFile;
     private String selectedFileName;
 
-<<<<<<< Updated upstream
-    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Limit Size;Solution Found;Solution Cost;Number of Expanded Nodes;Maximum Frontier Size;Number of Generated States\n";
-=======
-    private final String FILE_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
->>>>>>> Stashed changes
+    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
 
     public MainFrame() {
         try {
