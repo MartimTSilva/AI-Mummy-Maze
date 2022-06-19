@@ -126,6 +126,7 @@ public class MainFrame extends JFrame {
                 buttonShowSolution.setEnabled(false);
                 buttonReset.setEnabled(false);
                 buttonLevelTest.setEnabled(true);
+                textArea.setText("");
             }
         } catch (IOException e1) {
             e1.printStackTrace(System.err);
@@ -137,8 +138,10 @@ public class MainFrame extends JFrame {
     public void comboBoxSearchMethods_ActionPerformed(ActionEvent e) {
         int index = comboBoxSearchMethods.getSelectedIndex();
         agent.setSearchMethod((SearchMethod) comboBoxSearchMethods.getItemAt(index));
-        //puzzleTableModel.setPuzzle(agent.resetEnvironment());
-        buttonSolve.setEnabled(true);
+        if (agent.getEnvironment().getHero() != null) {
+            gameArea.setState(agent.resetEnvironment());
+            buttonSolve.setEnabled(true);
+        }
         buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
         textArea.setText("");
@@ -158,13 +161,14 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonSolve_ActionPerformed(ActionEvent e) {
+        gameArea.setState(agent.resetEnvironment());
+        textArea.setText("");
+        buttonStop.setEnabled(true);
+        buttonSolve.setEnabled(false);
+        buttonInitialState.setEnabled(false);
         SwingWorker worker = new SwingWorker<Solution, Void>() {
             @Override
             public Solution doInBackground() {
-                textArea.setText("");
-                buttonStop.setEnabled(true);
-                buttonSolve.setEnabled(false);
-                buttonInitialState.setEnabled(false);
                 try {
                     prepareSearchAlgorithm();
                     MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
@@ -193,10 +197,14 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonStop_ActionPerformed(ActionEvent e) {
-        agent.stop();
-        buttonShowSolution.setEnabled(false);
         buttonStop.setEnabled(false);
+        agent.stop();
+        buttonInitialState.setEnabled(true);
         buttonSolve.setEnabled(true);
+        buttonShowSolution.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(true);
+        buttonReset.setEnabled(true);
+        buttonLevelTest.setEnabled(true);
     }
 
     public void buttonShowSolution_ActionPerformed(ActionEvent e) {
@@ -204,11 +212,13 @@ public class MainFrame extends JFrame {
         buttonStop.setEnabled(false);
         buttonSolve.setEnabled(false);
         buttonInitialState.setEnabled(false);
+        buttonLevelTest.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(false);
+
         SwingWorker worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
                 agent.executeSolution();
-                buttonReset.setEnabled(true);
                 return null;
             }
 
@@ -217,6 +227,8 @@ public class MainFrame extends JFrame {
                 buttonShowSolution.setEnabled(false);
                 buttonSolve.setEnabled(false);
                 buttonInitialState.setEnabled(true);
+                comboBoxSearchMethods.setEnabled(true);
+                buttonReset.setEnabled(true);
             }
         };
         worker.execute();
@@ -224,18 +236,16 @@ public class MainFrame extends JFrame {
 
     public void buttonReset_ActionPerformed(ActionEvent e) {
         gameArea.setState(agent.resetEnvironment());
-        buttonShowSolution.setEnabled(true);
+        buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
+        buttonSolve.setEnabled(true);
+        textArea.setText("");
     }
 
     public void buttonLevelTest_ActionPerformed() throws IOException {
-        String dateStr = new SimpleDateFormat("dd-MM-yyyy (HH_mm_ms)").format(new Date());
-        String testFilePath = "./tests/" + selectedFileName + "-" + dateStr + ".csv";
-        testFile = new File(testFilePath);
-        testBuilder = new StringBuilder();
+        prepareTest();
 
         try {
-            prepareForTest();
             SwingWorker worker = new SwingWorker<Void, Void>() {
                 @Override
                 public Void doInBackground() {
@@ -263,7 +273,7 @@ public class MainFrame extends JFrame {
                     buttonSolve.setEnabled(true);
                     buttonStop.setEnabled(false);
                     comboBoxSearchMethods.setEnabled(true);
-                    comboBoxHeuristics.setEnabled(true);
+                    comboBoxHeuristics.setEnabled(comboBoxSearchMethods.getSelectedIndex() > 4);
                     buttonLevelTest.setEnabled(true);
                 }
             };
@@ -305,15 +315,14 @@ public class MainFrame extends JFrame {
         agent.resetEnvironment();
         agent.setSearchMethod(searchMethod);
 
-        textArea.append(" - ");
         MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
         testBuilder.append("\n").append(selectedFileName).append(";");
         try {
             agent.solveProblem(problem);
             if (agent.hasBeenStopped())
-                textArea.append(" Stopped :(");
+                textArea.append(" -  Stopped :(");
             else
-                textArea.append(" OK!");
+                textArea.append(" -  OK!");
 
             testBuilder.append(agent.getStatistics());
         } catch (Exception e) {
@@ -322,17 +331,21 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private void prepareForTest() {
+    private void prepareTest() {
+        String dateStr = new SimpleDateFormat("dd-MM-yyyy (HH_mm_ms)").format(new Date());
+        String testFilePath = "./tests/" + selectedFileName + "-" + dateStr + ".csv";
+        testFile = new File(testFilePath);
+        testBuilder = new StringBuilder();
+
         textArea.setText("");
         buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
         buttonInitialState.setEnabled(false);
         buttonSolve.setEnabled(false);
-        buttonStop.setEnabled(true);
+        buttonStop.setEnabled(false);
         comboBoxHeuristics.setEnabled(false);
         comboBoxSearchMethods.setEnabled(false);
         buttonLevelTest.setEnabled(false);
-        buttonStop.setEnabled(false);
 
         testBuilder = new StringBuilder();
     }
@@ -405,7 +418,6 @@ class ButtonSolve_ActionAdapter implements ActionListener {
 }
 
 class ButtonStop_ActionAdapter implements ActionListener {
-
     private final MainFrame adaptee;
 
     ButtonStop_ActionAdapter(MainFrame adaptee) {
