@@ -86,5 +86,4 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
 
         return str.toString();
     }
-
 }

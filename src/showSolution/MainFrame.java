@@ -45,7 +45,7 @@ public class MainFrame extends JFrame {
     private File testFile;
     private String selectedFileName;
 
-    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Num of Expanded Nodes;Max Frontier Size;Num of Generated States\n";
+    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Expanded Nodes;Max Frontier Size;Generated States\n";
 
     public MainFrame() {
         try {
