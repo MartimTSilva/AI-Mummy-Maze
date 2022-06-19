@@ -78,8 +78,8 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
             str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
             return str.toString();
         }
-
         str.append("Yes").append(";").append(solution.getCost()).append(";");
+
         str.append(searchMethod.getStatistics().numExpandedNodes).append(";");
         str.append(searchMethod.getStatistics().maxFrontierSize).append(";");
         str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
