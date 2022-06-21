@@ -106,3 +106,14 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# Ignore MS Word files
+*.doc
+*.docx
+
+# Level Tests Folder
+tests/
+
+# Ignore MS Word files
+*.doc
+*.docx

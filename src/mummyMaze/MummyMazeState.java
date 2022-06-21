@@ -344,7 +344,49 @@ public class MummyMazeState extends State implements Cloneable {
         if (isHeroDead())
             return Double.MAX_VALUE;
 
-        return 0;
+        if (isGoalReached())
+            return 0;
+
+        int maxDistance = (SIZE - 3) * 2; //Começar a contar numa posição (-2) e não contar parte de fora do maze (-1)
+        double h = maxDistance;
+        double aux = Double.MAX_VALUE;
+
+        if (whiteMummies != null) {
+            for (Agent wMummy : whiteMummies) {
+                if (!wMummy.isAlive)
+                    continue;
+
+                // Verificar se o inimigo está mais perto que o anterior
+                aux = distanceToHero(wMummy);
+                if (aux < h)
+                    h = aux;    //Se a distancia para o inimigo atual for menor que o anterior, h passa a ter esse valor
+            }
+        }
+
+        if (redMummies != null) {
+            for (Agent rMummy : redMummies) {
+                if (!rMummy.isAlive)
+                    continue;
+
+                aux = distanceToHero(rMummy);
+                if (aux < h)
+                    h = aux;
+            }
+        }
+
+        if (scorpions != null) {
+            for (Agent scorpion : scorpions) {
+                if (!scorpion.isAlive)
+                    continue;
+
+                aux = distanceToHero(scorpion);
+                if (aux < h)
+                    h = aux;
+            }
+        }
+
+        //Se (aux > max) quer dizer que aux está com valor inf porque não havia inimigos, logo devolve 0
+        return aux > maxDistance ? 0 : maxDistance - h;
     }
 
     public int getNumLines() {

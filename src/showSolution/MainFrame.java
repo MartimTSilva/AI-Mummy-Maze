@@ -9,7 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import javax.swing.*;
 
@@ -32,7 +38,14 @@ public class MainFrame extends JFrame {
     private JButton buttonStop = new JButton("Stop");
     private JButton buttonShowSolution = new JButton("Show solution");
     private JButton buttonReset = new JButton("Reset to initial state");
+    private final JButton buttonLevelTest = new JButton("Test level");
     private JTextArea textArea;
+
+    private StringBuilder testBuilder;
+    private File testFile;
+    private String selectedFileName;
+
+    private final String EXCEL_HEADER = "Level;Search Algorithm;Heuristic;Solution Found;Solution Cost;Expanded Nodes;Max Frontier Size;Generated States\n";
 
     public MainFrame() {
         try {
@@ -43,7 +56,6 @@ public class MainFrame extends JFrame {
     }
 
     private void jbInit() throws Exception {
-
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Mummy Maze");
 
@@ -53,6 +65,7 @@ public class MainFrame extends JFrame {
         panelButtons.add(buttonInitialState);
         buttonInitialState.addActionListener(new ButtonInitialState_ActionAdapter(this));
         panelButtons.add(buttonSolve);
+        buttonSolve.setEnabled(false);
         buttonSolve.addActionListener(new ButtonSolve_ActionAdapter(this));
         panelButtons.add(buttonStop);
         buttonStop.setEnabled(false);
@@ -63,6 +76,9 @@ public class MainFrame extends JFrame {
         panelButtons.add(buttonReset);
         buttonReset.setEnabled(false);
         buttonReset.addActionListener(new ButtonReset_ActionAdapter(this));
+        panelButtons.add(buttonLevelTest);
+        buttonLevelTest.setEnabled(false);
+        buttonLevelTest.addActionListener(new ButtonLevelTest_ActionAdapter(this));
 
         JPanel panelSearchMethods = new JPanel(new FlowLayout());
         comboBoxSearchMethods = new JComboBox(agent.getSearchMethodsArray());
@@ -93,17 +109,24 @@ public class MainFrame extends JFrame {
         mainPanel.add(gamePanel, BorderLayout.SOUTH);
         contentPane.add(mainPanel);
 
+        Path testsFolder = Path.of("./tests");
+        if (!Files.exists(testsFolder))
+            Files.createDirectory(testsFolder);
+
         pack();
     }
 
     public void buttonInitialState_ActionPerformed(ActionEvent e) {
-        JFileChooser fc = new JFileChooser(new java.io.File("."));
+        JFileChooser fc = new JFileChooser(new java.io.File("./levels"));
         try {
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                selectedFileName = fc.getSelectedFile().getName();
                 gameArea.setState(agent.readInitialStateFromFile(fc.getSelectedFile()));
                 buttonSolve.setEnabled(true);
                 buttonShowSolution.setEnabled(false);
                 buttonReset.setEnabled(false);
+                buttonLevelTest.setEnabled(true);
+                textArea.setText("");
             }
         } catch (IOException e1) {
             e1.printStackTrace(System.err);
@@ -115,8 +138,10 @@ public class MainFrame extends JFrame {
     public void comboBoxSearchMethods_ActionPerformed(ActionEvent e) {
         int index = comboBoxSearchMethods.getSelectedIndex();
         agent.setSearchMethod((SearchMethod) comboBoxSearchMethods.getItemAt(index));
-        //puzzleTableModel.setPuzzle(agent.resetEnvironment());
-        buttonSolve.setEnabled(true);
+        if (agent.getEnvironment().getHero() != null) {
+            gameArea.setState(agent.resetEnvironment());
+            buttonSolve.setEnabled(true);
+        }
         buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
         textArea.setText("");
@@ -136,12 +161,14 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonSolve_ActionPerformed(ActionEvent e) {
+        gameArea.setState(agent.resetEnvironment());
+        textArea.setText("");
+        buttonStop.setEnabled(true);
+        buttonSolve.setEnabled(false);
+        buttonInitialState.setEnabled(false);
         SwingWorker worker = new SwingWorker<Solution, Void>() {
             @Override
             public Solution doInBackground() {
-                textArea.setText("");
-                buttonStop.setEnabled(true);
-                buttonSolve.setEnabled(false);
                 try {
                     prepareSearchAlgorithm();
                     MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
@@ -162,6 +189,7 @@ public class MainFrame extends JFrame {
                 }
                 buttonSolve.setEnabled(true);
                 buttonStop.setEnabled(false);
+                buttonInitialState.setEnabled(true);
             }
         };
 
@@ -169,28 +197,38 @@ public class MainFrame extends JFrame {
     }
 
     public void buttonStop_ActionPerformed(ActionEvent e) {
-        agent.stop();
-        buttonShowSolution.setEnabled(false);
         buttonStop.setEnabled(false);
+        agent.stop();
+        buttonInitialState.setEnabled(true);
         buttonSolve.setEnabled(true);
+        buttonShowSolution.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(true);
+        buttonReset.setEnabled(true);
+        buttonLevelTest.setEnabled(true);
     }
 
     public void buttonShowSolution_ActionPerformed(ActionEvent e) {
         buttonShowSolution.setEnabled(false);
         buttonStop.setEnabled(false);
         buttonSolve.setEnabled(false);
+        buttonInitialState.setEnabled(false);
+        buttonLevelTest.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(false);
+
         SwingWorker worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
                 agent.executeSolution();
-                buttonReset.setEnabled(true);
                 return null;
             }
 
             @Override
             public void done() {
-                buttonShowSolution.setEnabled(true);
-                buttonSolve.setEnabled(true);
+                buttonShowSolution.setEnabled(false);
+                buttonSolve.setEnabled(false);
+                buttonInitialState.setEnabled(true);
+                comboBoxSearchMethods.setEnabled(true);
+                buttonReset.setEnabled(true);
             }
         };
         worker.execute();
@@ -198,8 +236,118 @@ public class MainFrame extends JFrame {
 
     public void buttonReset_ActionPerformed(ActionEvent e) {
         gameArea.setState(agent.resetEnvironment());
-        buttonShowSolution.setEnabled(true);
+        buttonShowSolution.setEnabled(false);
         buttonReset.setEnabled(false);
+        buttonSolve.setEnabled(true);
+        textArea.setText("");
+    }
+
+    public void buttonLevelTest_ActionPerformed() throws IOException {
+        prepareTest();
+
+        try {
+            SwingWorker worker = new SwingWorker<Void, Void>() {
+                @Override
+                public Void doInBackground() {
+                    try {
+                        textArea.setText("Testing " + selectedFileName + "...");
+                        Files.writeString(testFile.toPath(), EXCEL_HEADER, StandardOpenOption.CREATE);
+                        testLevel();
+                    } catch (Exception e) {
+                        e.printStackTrace(System.err);
+                    }
+                    return null;
+                }
+
+                @Override
+                public void done() {
+                    if (testBuilder.length() > 0) {
+                        try {
+                            Files.writeString(testFile.toPath(), testBuilder, StandardOpenOption.APPEND);
+                        } catch (IOException e) {
+                            e.printStackTrace(System.err);
+                        }
+                    }
+
+                    buttonInitialState.setEnabled(true);
+                    buttonSolve.setEnabled(true);
+                    buttonStop.setEnabled(false);
+                    comboBoxSearchMethods.setEnabled(true);
+                    comboBoxHeuristics.setEnabled(comboBoxSearchMethods.getSelectedIndex() > 4);
+                    buttonLevelTest.setEnabled(true);
+                }
+            };
+            worker.execute();
+
+
+        } catch (NoSuchElementException e2) {
+            JOptionPane.showMessageDialog(this, "File format not valid", "Error!", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private synchronized void testLevel() {
+        for (int i = 0; i < agent.getSearchMethodsArray().length; i++) {
+            //Don't test Beam and Depth Limited Search (i == 3 -> DepthLimitedSearch | i == 7 -> BeamSearch)
+            if (i == 3 || i == 7)
+                continue;
+
+            SearchMethod searchMethod = agent.getSearchMethodsArray()[i];
+
+            //Don't need heuristic if search method is not informed
+            if (i > 4) {
+                for (Heuristic heuristic : agent.getHeuristicsArray()) {
+                    runSearchMethodTest(searchMethod, heuristic);
+                }
+            } else {
+                runSearchMethodTest(searchMethod, null);
+            }
+        }
+        textArea.append("\nTests completed!");
+    }
+
+    private void runSearchMethodTest(SearchMethod searchMethod, Heuristic heuristic) {
+        textArea.append("\n\t" + searchMethod);
+
+        if (heuristic != null)
+            textArea.append(" (" + heuristic + ")");
+
+        agent.setHeuristic(heuristic);
+        agent.resetEnvironment();
+        agent.setSearchMethod(searchMethod);
+
+        MummyMazeProblem problem = new MummyMazeProblem(agent.getEnvironment().clone());
+        testBuilder.append("\n").append(selectedFileName).append(";");
+        try {
+            agent.solveProblem(problem);
+            if (agent.hasBeenStopped())
+                textArea.append(" -  Stopped :(");
+            else
+                textArea.append(" -  OK!");
+
+            testBuilder.append(agent.getStatistics());
+        } catch (Exception e) {
+            textArea.append("Something went wrong..\n ERROR: " + e.getMessage());
+            testBuilder.append(agent.getStatistics().replaceFirst("ERROR", ""));
+        }
+    }
+
+    private void prepareTest() {
+        String dateStr = new SimpleDateFormat("dd-MM-yyyy (HH_mm_ms)").format(new Date());
+        String testFilePath = "./tests/" + selectedFileName + "-" + dateStr + ".csv";
+        testFile = new File(testFilePath);
+        testBuilder = new StringBuilder();
+
+        textArea.setText("");
+        buttonShowSolution.setEnabled(false);
+        buttonReset.setEnabled(false);
+        buttonInitialState.setEnabled(false);
+        buttonSolve.setEnabled(false);
+        buttonStop.setEnabled(false);
+        comboBoxHeuristics.setEnabled(false);
+        comboBoxSearchMethods.setEnabled(false);
+        buttonLevelTest.setEnabled(false);
+
+        testBuilder = new StringBuilder();
     }
 
     private void prepareSearchAlgorithm() {
@@ -270,7 +418,6 @@ class ButtonSolve_ActionAdapter implements ActionListener {
 }
 
 class ButtonStop_ActionAdapter implements ActionListener {
-
     private final MainFrame adaptee;
 
     ButtonStop_ActionAdapter(MainFrame adaptee) {
@@ -308,6 +455,24 @@ class ButtonReset_ActionAdapter implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         adaptee.buttonReset_ActionPerformed(e);
+    }
+}
+
+class ButtonLevelTest_ActionAdapter implements ActionListener {
+
+    private final MainFrame adaptee;
+
+    ButtonLevelTest_ActionAdapter(MainFrame adaptee) {
+        this.adaptee = adaptee;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            adaptee.buttonLevelTest_ActionPerformed();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
 

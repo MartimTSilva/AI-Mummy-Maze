@@ -1,6 +1,8 @@
 package mummyMaze;
 
 import agent.Agent;
+import searchmethods.BeamSearch;
+import searchmethods.DepthLimitedSearch;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +19,7 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
         initialEnvironment = environment.clone();
         heuristics.add(new HeuristicGoalDistance());
         heuristics.add(new HeuristicEnemyDistance());
+        heuristics.add(new HeuristicGoalAndEnemyDistance());
         heuristic = heuristics.get(0);
     }
 
@@ -61,5 +64,26 @@ public class MummyMazeAgent extends Agent<MummyMazeState> {
         initialEnvironment = new MummyMazeState(matrix, exit, doors, keys, traps);
         resetEnvironment();
         return environment;
+    }
+
+    public String getStatistics() {
+        StringBuilder str = new StringBuilder();
+        str.append(searchMethod).append(";");
+        str.append(heuristic).append(";");
+
+        if (solution == null){
+            str.append("No solution found").append(";").append("0").append(";");
+            str.append(searchMethod.getStatistics().numExpandedNodes).append(";");
+            str.append(searchMethod.getStatistics().maxFrontierSize).append(";");
+            str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
+            return str.toString();
+        }
+        str.append("Yes").append(";").append(solution.getCost()).append(";");
+
+        str.append(searchMethod.getStatistics().numExpandedNodes).append(";");
+        str.append(searchMethod.getStatistics().maxFrontierSize).append(";");
+        str.append(searchMethod.getStatistics().numGeneratedNodes).append(";");
+
+        return str.toString();
     }
 }
