@@ -84,8 +84,7 @@ public class MummyMazeState extends State implements Cloneable {
     }
 
     private boolean isCellSafe(int line, int col) {
-        return matrix[line][col] == Cell.FLOOR || matrix[line][col] == Cell.KEY ||
-                matrix[line][col] == Cell.HORIZ_DOOR_OPEN || matrix[line][col] == Cell.VERT_DOOR_OPEN;
+        return matrix[line][col] == Cell.FLOOR || matrix[line][col] == Cell.KEY;
     }
 
     public boolean canMoveUp() {
@@ -271,6 +270,7 @@ public class MummyMazeState extends State implements Cloneable {
 
     private void moveEnemyVertically(Agent enemy) {
         boolean isRedMummy = enemy.cellType == Cell.RED_MUMMY;
+
         int diff = hero.i - enemy.i;
         if (diff < 0 && !hasWall(enemy.i - 1, enemy.j) && enemy.i > 2) {
             moveVertically(-2, enemy);
@@ -353,9 +353,6 @@ public class MummyMazeState extends State implements Cloneable {
 
         if (whiteMummies != null) {
             for (Agent wMummy : whiteMummies) {
-                if (!wMummy.isAlive)
-                    continue;
-
                 // Verificar se o inimigo está mais perto que o anterior
                 aux = distanceToHero(wMummy);
                 if (aux < h)
@@ -365,9 +362,6 @@ public class MummyMazeState extends State implements Cloneable {
 
         if (redMummies != null) {
             for (Agent rMummy : redMummies) {
-                if (!rMummy.isAlive)
-                    continue;
-
                 aux = distanceToHero(rMummy);
                 if (aux < h)
                     h = aux;
@@ -376,9 +370,6 @@ public class MummyMazeState extends State implements Cloneable {
 
         if (scorpions != null) {
             for (Agent scorpion : scorpions) {
-                if (!scorpion.isAlive)
-                    continue;
-
                 aux = distanceToHero(scorpion);
                 if (aux < h)
                     h = aux;
@@ -387,21 +378,6 @@ public class MummyMazeState extends State implements Cloneable {
 
         //Se (aux > max) quer dizer que aux está com valor inf porque não havia inimigos, logo devolve 0
         return aux > maxDistance ? 0 : maxDistance - h;
-    }
-
-    public int getNumLines() {
-        return matrix.length;
-    }
-
-    public int getNumColumns() {
-        return matrix[0].length;
-    }
-
-    public int getTileValue(int line, int column) {
-        if (!isValidPosition(line, column)) {
-            throw new IndexOutOfBoundsException("Invalid position!");
-        }
-        return matrix[line][column];
     }
 
     public boolean isValidPosition(int line, int column) {
